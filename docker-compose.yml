@@ -42,9 +42,9 @@ services:
       - postgres
     networks:
       - user_management_network
-    volumes:
-      - ./:/app
-      - /app/node_modules
+    # volumes:
+    #   - ./:/app
+    #   - /app/node_modules
 
   # pgAdmin for database management
   pgadmin:

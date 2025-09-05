@@ -23,6 +23,10 @@ export class ApiKeyService {
     return this.apiKeyRepository.save(apiKey);
   }
 
+  async findAll(): Promise<ApiKey[]> {
+    return this.apiKeyRepository.find({ relations: ['user'] });
+  }
+
   async findByKey(key: string): Promise<ApiKey> {
     return this.apiKeyRepository.findOne({ where: { key }, relations: ['user'] });
   }

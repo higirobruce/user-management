@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Body } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Get } from '@nestjs/common';
 import { ApiKeyService } from './api-key.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -21,5 +21,11 @@ export class ApiKeyController {
       createdAt: apiKey.createdAt,
       expiresAt: apiKey.expiresAt,
     };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async findAll(@CurrentUser() user: User) {
+    return this.apiKeyService.findAll();
   }
 }

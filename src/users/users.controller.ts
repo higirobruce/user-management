@@ -49,7 +49,8 @@ export class UsersController {
   }
 
   @Get()
-  @UseGuards(ApiKeyGuard)
+  // @UseGuards(ApiKeyGuard)
+  @UseGuards(RolesGuard)
   // @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Get all users (Admin only)' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })

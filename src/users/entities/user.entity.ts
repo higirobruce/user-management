@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { ApiKey } from '../../api-key/api-key.entity';
 import { Exclude } from 'class-transformer';
 
 export enum UserRole {
@@ -63,4 +64,7 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => ApiKey, apiKey => apiKey.user)
+  apiKeys: ApiKey[];
 }

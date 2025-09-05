@@ -79,8 +79,8 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<void> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+  async changePassword(email: string, changePasswordDto: ChangePasswordDto): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { email } });
 
     if (!user) {
       throw new NotFoundException('User not found');

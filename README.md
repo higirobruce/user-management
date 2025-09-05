@@ -1,6 +1,6 @@
-# User Management Service
+# User Management Service, by Software Solutions Division at RISA
 
-A comprehensive user management service built with NestJS, featuring JWT authentication, role-based access control, and PostgreSQL database integration.
+A comprehensive user management service built with NestJS, featuring JWT authentication, role-based access control, API key management, and PostgreSQL database integration.
 
 ## Features
 
@@ -9,6 +9,7 @@ A comprehensive user management service built with NestJS, featuring JWT authent
 - **Password Management**: Secure password hashing and reset functionality via email
 - **User Profile Management**: Update user information and change passwords
 - **Role-Based Access Control**: Admin and Minister roles with appropriate permissions
+- **API Key Management**: Generate and manage API keys for programmatic access
 - **User Status Management**: Activate/deactivate user accounts
 - **RESTful API**: Comprehensive REST API with Swagger documentation
 - **Docker Support**: Containerized application with PostgreSQL database
@@ -93,6 +94,10 @@ A comprehensive user management service built with NestJS, featuring JWT authent
 - `PATCH /users/:id/deactivate` - Deactivate user (Admin only)
 - `DELETE /users/:id` - Delete user (Admin only)
 
+### API Key Management Endpoints
+
+- `POST /api-keys` - Create a new API key (Requires JWT authentication)
+
 ## User Roles
 
 ### Admin
@@ -133,6 +138,7 @@ A comprehensive user management service built with NestJS, featuring JWT authent
 - **Token Invalidation**: Refresh tokens are invalidated on logout and password change
 - **Input Validation**: All inputs are validated using class-validator
 - **SQL Injection Protection**: TypeORM provides ORM-level protection
+- **API Key Authentication**: Secure endpoints with `x-api-key` header validation
 
 ## Database Schema
 
@@ -150,6 +156,19 @@ A comprehensive user management service built with NestJS, featuring JWT authent
 - `passwordResetExpires` (Date) - Password reset token expiration
 - `createdAt` (Date) - Account creation timestamp
 - `updatedAt` (Date) - Last update timestamp
+- `apiKeys` (Relation) - One-to-many relationship with ApiKey entity
+
+### ApiKeys Table
+- `id` (UUID) - Primary key
+- `key` (String) - The API key (unique)
+- `name` (String) - A descriptive name for the key
+- `status` (Enum) - `active`, `inactive`, `revoked`
+- `permissions` (Array) - Scopes or permissions for the key
+- `lastUsedAt` (Date) - Timestamp of the last time the key was used
+- `expiresAt` (Date) - Expiration date for the key
+- `createdAt` (Date) - Creation timestamp
+- `updatedAt` (Date) - Last update timestamp
+- `user` (Relation) - Many-to-one relationship with User entity
 
 ## Testing
 
@@ -209,10 +228,94 @@ curl -X POST http://localhost:3000/auth/login \
   }'
 ```
 
+### Refresh Access Token
+```bash
+curl -X POST http://localhost:3000/auth/refresh \
+  -H "Authorization: Bearer YOUR_REFRESH_TOKEN"
+```
+
 ### Get user profile (with JWT token)
 ```bash
 curl -X GET http://localhost:3000/users/profile \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Update User Profile
+```bash
+curl -X PATCH http://localhost:3000/users/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Johnathan"
+  }'
+```
+
+### Change Password
+```bash
+curl -X PATCH http://localhost:3000/users/profile/change-password \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "oldPassword": "securePassword123",
+    "newPassword": "newSecurePassword456"
+  }'
+```
+
+### Get All Users (Admin)
+```bash
+curl -X GET http://localhost:3000/users \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
+```
+
+### Get User by ID (Admin)
+```bash
+curl -X GET http://localhost:3000/users/USER_ID \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
+```
+
+### Update User by ID (Admin)
+```bash
+curl -X PATCH http://localhost:3000/users/USER_ID \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role": "admin"
+  }'
+```
+
+### Activate/Deactivate User (Admin)
+```bash
+# Activate
+curl -X PATCH http://localhost:3000/users/USER_ID/activate \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
+
+# Deactivate
+curl -X PATCH http://localhost:3000/users/USER_ID/deactivate \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
+```
+
+### Delete User (Admin)
+```bash
+curl -X DELETE http://localhost:3000/users/USER_ID \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
+```
+
+### Create API Key
+```bash
+curl -X POST http://localhost:3000/api-keys \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Test Key",
+    "permissions": ["read:data"],
+    "expiresAt": "2024-12-31T23:59:59.000Z"
+  }'
+```
+
+### Using an API Key
+```bash
+curl -X GET http://localhost:3000/some-protected-route \
+  -H "x-api-key: YOUR_API_KEY"
 ```
 
 ## Production Deployment
@@ -248,4 +351,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
-For support and questions, please open an issue in the repository or contact the development team.
+For support and questions, please open an issue in the repository or contact the development team @ softwaredivision@risa.gov.rw.

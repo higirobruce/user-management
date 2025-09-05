@@ -17,6 +17,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { ApiKeyGuard } from '../api-key/guards/api-key.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User, UserRole } from './entities/user.entity';
@@ -24,14 +25,16 @@ import { UsersService } from './users.service';
 
 @ApiTags('Users')
 @Controller('users')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
+
 @ApiBearerAuth()
 export class UsersController {
-  constructor(private readonly userService: UsersService) {}
+  constructor(private readonly userService: UsersService) { }
 
   @Post()
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
+  // @UseGuards(RolesGuard)
+  @UseGuards(ApiKeyGuard)
+  // @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Create a new user (Admin only)' })
   @ApiResponse({ status: 201, description: 'User successfully created' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -46,8 +49,8 @@ export class UsersController {
   }
 
   @Get()
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(ApiKeyGuard)
+  // @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Get all users (Admin only)' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
@@ -59,11 +62,13 @@ export class UsersController {
     };
   }
 
-  @Get('profile')
+  @Get('profile/:id')
+  @UseGuards(ApiKeyGuard)
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
-  async getProfile(@CurrentUser() user: User) {
-    const profile = await this.userService.findOne(user.id);
+  async getProfile(@Param() id: string) {
+
+    const profile = await this.userService.findOne(id);
     return {
       message: 'Profile retrieved successfully',
       user: profile,
@@ -71,8 +76,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(ApiKeyGuard)
   @ApiOperation({ summary: 'Get user by ID (Admin only)' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -86,6 +90,7 @@ export class UsersController {
   }
 
   @Patch('profile')
+  @UseGuards(ApiKeyGuard)
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ status: 200, description: 'Profile updated successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -102,6 +107,7 @@ export class UsersController {
 
   @Patch(':id')
   @UseGuards(RolesGuard)
+  @UseGuards(ApiKeyGuard)
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Update user by ID (Admin only)' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
@@ -116,15 +122,16 @@ export class UsersController {
   }
 
   @Patch('profile/change-password')
+  @UseGuards(ApiKeyGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Change current user password' })
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - Invalid current password' })
   async changePassword(
-    @CurrentUser() user: User,
+    // @CurrentUser() user: User,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
-    await this.userService.changePassword(user.id, changePasswordDto);
+    await this.userService.changePassword(changePasswordDto.email, changePasswordDto);
     return {
       message: 'Password changed successfully',
     };
@@ -132,6 +139,7 @@ export class UsersController {
 
   @Patch(':id/deactivate')
   @UseGuards(RolesGuard)
+  @UseGuards(ApiKeyGuard)
   @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Deactivate user (Admin only)' })
@@ -148,6 +156,7 @@ export class UsersController {
 
   @Patch(':id/activate')
   @UseGuards(RolesGuard)
+  @UseGuards(ApiKeyGuard)
   @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Activate user (Admin only)' })
@@ -164,6 +173,7 @@ export class UsersController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
+  @UseGuards(ApiKeyGuard)
   @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete user (Admin only)' })

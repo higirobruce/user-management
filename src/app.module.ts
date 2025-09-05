@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './users/users.module';
+import { ApiKeyModule } from './api-key/api-key.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UserModule } from './users/users.module';
     }),
     UserModule,
     AuthModule,
+    ApiKeyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

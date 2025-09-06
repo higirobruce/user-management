@@ -1,0 +1,49 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Availability } from './entities/availability.entity';
+import { User } from '../users/entities/user.entity';
+import { CreateAvailabilityDto } from './dto/create-availability.dto';
+
+@Injectable()
+export class AvailabilityService {
+  constructor(
+    @InjectRepository(Availability)
+    private availabilityRepository: Repository<Availability>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
+
+  async create(
+    userId: string,
+    createAvailabilityDto: CreateAvailabilityDto,
+  ): Promise<Availability> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const { userId: dtoUserId, ...restOfDto } = createAvailabilityDto;
+
+    const availability = this.availabilityRepository.create({
+      ...restOfDto,
+      user,
+    });
+    return this.availabilityRepository.save(availability);
+  }
+
+  async findForUser(userId: string): Promise<any[]> {
+    return this.availabilityRepository.find({
+      where: { user: { id: userId } },
+      order: { startDate: 'DESC' },
+      relations: ['user'],
+    });
+  }
+
+  async findAll(): Promise<any[]> {
+    return this.availabilityRepository.find({
+      order: { startDate: 'DESC' },
+      relations: ['user'], //don't return user's password
+    });
+  }
+}

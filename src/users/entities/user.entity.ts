@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { ApiKey } from '../../api-key/api-key.entity';
 import { Exclude } from 'class-transformer';
+import { Availability } from 'src/availability/entities/availability.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -26,8 +27,8 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
   @Exclude()
+  @Column()
   password: string;
 
   @Column()
@@ -65,6 +66,9 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => ApiKey, apiKey => apiKey.user)
+  @OneToMany(() => ApiKey, (apiKey) => apiKey.user)
   apiKeys: ApiKey[];
+
+  @OneToMany(() => Availability, (availability) => availability.user)
+  availabilities: Availability[];
 }

@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './users/users.module';
 import { ApiKeyModule } from './api-key/api-key.module';
+import { AvailabilityModule } from './availability/availability.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ApiKeyModule } from './api-key/api-key.module';
     UserModule,
     AuthModule,
     ApiKeyModule,
+    AvailabilityModule,
   ],
   controllers: [AppController],
   providers: [AppService],

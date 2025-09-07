@@ -12,6 +12,10 @@ export interface TokenPayload {
   sub: string;
   email: string;
   role: string;
+  id: string;
+  firstName: string;
+  lastName: string;
+  ministry: string;
 }
 
 export interface AuthTokens {
@@ -134,6 +138,10 @@ export class AuthService {
     const payload: TokenPayload = {
       sub: user.id,
       email: user.email,
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      ministry: user.ministry,
       role: user.role,
     };
 

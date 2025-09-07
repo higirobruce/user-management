@@ -20,9 +20,9 @@ export class AvailabilityController {
   ) {
     const targetUserId = createAvailabilityDto.userId || currentUser.id;
 
-    if (createAvailabilityDto.userId && currentUser.role !== UserRole.ADMIN) {
-      throw new ForbiddenException('You are not allowed to create availability for other users.');
-    }
+    // if (createAvailabilityDto.userId && currentUser.role !== UserRole.ADMIN) {
+    //   throw new ForbiddenException('You are not allowed to create availability for other users.');
+    // }
 
     return this.availabilityService.create(targetUserId, createAvailabilityDto);
   }

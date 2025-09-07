@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Body, Get, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Get, ForbiddenException, Delete } from '@nestjs/common';
 import { AvailabilityService } from './availability.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -38,5 +38,15 @@ export class AvailabilityController {
   @Get('all')
   async findAll() {
     return this.availabilityService.findAll();
+  }
+
+  //delete all availabilities
+  @UseGuards(JwtAuthGuard)
+  @Delete('all')
+  async deleteAll(@CurrentUser() user: User) {
+    if (user.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('You are not allowed to delete all availabilities.');
+    }
+    return this.availabilityService.deleteAll();
   }
 }

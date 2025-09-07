@@ -46,4 +46,28 @@ export class AvailabilityService {
       relations: ['user'], //don't return user's password
     });
   }
+
+  async delete(id: string) {
+    const availability = await this.availabilityRepository.findOne({
+      where: { id },
+    });
+    if (!availability) {
+      throw new NotFoundException(`Availability with ID ${id} not found`);
+    }
+    return this.availabilityRepository.delete(id);
+  }
+
+  async deleteAll() {
+    return this.availabilityRepository.delete({});
+  }
+
+  async update(id: string, updateAvailabilityDto: CreateAvailabilityDto) {
+    const availability = await this.availabilityRepository.findOne({
+      where: { id },
+    });
+    if (!availability) {
+      throw new NotFoundException(`Availability with ID ${id} not found`);
+    }
+    return this.availabilityRepository.update(id, updateAvailabilityDto);
+  }
 }

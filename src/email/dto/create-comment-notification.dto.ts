@@ -1,0 +1,24 @@
+// create-comment-notification.dto.ts
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+
+export class CreateCommentNotificationDto {
+  @IsEmail()
+  @IsNotEmpty()
+  to: string;
+
+  @IsString()
+  @IsNotEmpty()
+  actionTitle: string;
+
+  @IsString()
+  @IsNotEmpty()
+  actionDescription: string;
+
+  @IsString()
+  @IsNotEmpty()
+  commenterName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  commentContent: string;
+}

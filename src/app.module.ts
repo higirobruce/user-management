@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './users/users.module';
 import { ApiKeyModule } from './api-key/api-key.module';
 import { AvailabilityModule } from './availability/availability.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AvailabilityModule } from './availability/availability.module';
     AuthModule,
     ApiKeyModule,
     AvailabilityModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

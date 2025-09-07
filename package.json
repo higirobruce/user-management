@@ -17,9 +17,13 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "mjml:build": "mjml src/email/templates/comment-notification.hbs -o src/email/templates/comment-notification.html",
+    "mjml:watch": "mjml src/email/templates/comment-notification.hbs -o src/email/templates/comment-notification.html --watch",
+    "mjml:build-all": "mjml src/email/templates/*.hbs -o src/email/templates/ --recursive"
   },
   "dependencies": {
+    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^10.0.0",
@@ -32,6 +36,9 @@
     "bcryptjs": "^3.0.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "global": "^4.4.0",
+    "handlebars": "^4.7.8",
+    "mjml": "^4.15.3",
     "passport-jwt": "^4.0.1",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.0",

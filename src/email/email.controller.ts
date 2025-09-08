@@ -17,4 +17,9 @@ export class EmailController {
       createCommentNotificationDto.commentContent);
   }
 
+  @Get('test')
+  test() {
+    return {message:'Email sent successfully'};
+  }
+
 }

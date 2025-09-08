@@ -7,6 +7,7 @@ import { UserModule } from './users/users.module';
 import { ApiKeyModule } from './api-key/api-key.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { EmailModule } from './email/email.module';
+import { EmailNotificationModule } from './email-notification/email-notification.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { EmailModule } from './email/email.module';
     ApiKeyModule,
     AvailabilityModule,
     EmailModule,
-  ],
+    EmailNotificationModule,
+  ], 
   controllers: [AppController],
   providers: [AppService],
 })

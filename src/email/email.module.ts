@@ -12,16 +12,16 @@ import * as path from 'path';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         transport: {
-          host: configService.get<string>('SMTP_HOST'),
-          port: configService.get<number>('SMTP_PORT'),
-          secure: configService.get<boolean>('SMTP_SECURE'),
+          host: process.env.SMTP_HOST,
+          port: process.env.SMTP_PORT,
+          secure: process.env.SMTP_SECURE,
           auth: {
-            user: configService.get<string>('SMTP_USER'),
-            pass: configService.get<string>('SMTP_PASSWORD'),
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASSWORD,
           },
         },
         defaults: {
-          from: `"No Reply" <${configService.get<string>('SMTP_FROM_EMAIL')}>`,
+          from: `"No Reply" <${process.env.SMTP_FROM_EMAIL}>`,
         },
         template: {
           dir: path.join(__dirname, 'templates'),

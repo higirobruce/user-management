@@ -17,4 +17,10 @@ describe('EmailController', () => {
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
+
+  //test the endpoints
+  it('should send an email', async () => {
+    const result = await controller.test();
+    expect(result).toEqual({ message: 'Email sent successfully' });
+  });
 });

@@ -42,7 +42,7 @@ services:
       - SMTP_PORT=25
       - SMTP_SECURE=false
       - SMTP_USER=dashboard@gov.rw
-      - SMTP_PASSWORD=GoR Dashboard
+      - SMTP_PASSWORD=Kigali@2025!
       - SMTP_FROM_EMAIL=dashboard@gov.rw
 
     depends_on:

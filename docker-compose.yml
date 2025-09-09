@@ -38,7 +38,7 @@ services:
       - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
       - JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production
       - PORT=3000
-      - SMTP_HOST=mail.gov.rw
+      - SMTP_HOST=gateway.aos.rw
       - SMTP_PORT=25
       - SMTP_SECURE=false
       - SMTP_USER=dashboard@gov.rw

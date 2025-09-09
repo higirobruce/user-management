@@ -13,16 +13,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
         transport: {
-          host: 'mail.gov.rw',// config.get<string>('SMTP_HOST'),
-          port: 25, //config.get<number>('SMTP_PORT'),
-          secure: false, // true for 465, false for other ports
+          host: config.get<string>('SMTP_HOST'),
+          port: config.get<number>('SMTP_PORT'),
+          secure: config.get<boolean>('SMTP_SECURE'), // true for 465, false for other ports
           auth: {
             user: config.get<string>('SMTP_USER'),
             pass: config.get<string>('SMTP_PASSWORD'),
           },
-          tls: {
-            rejectUnauthorized: false, // sometimes needed if using self-signed certs
-          },
+          // tls: {
+          //   rejectUnauthorized: false, // sometimes needed if using self-signed certs
+          // },
 
         },
         defaults: {

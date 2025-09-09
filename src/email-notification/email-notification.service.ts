@@ -35,4 +35,12 @@ export class EmailNotificationService {
       },
     });
   }
+
+  async sendGenericEmail(to: string, subject: string, body: string) {
+    await this.mailerService.sendMail({
+      to: to,
+      subject: subject,
+      html: body,
+    });
+  }
 }

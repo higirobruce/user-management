@@ -9,4 +9,9 @@ export class EmailNotificationController {
   async sendWelcomeEmail(@Body() body: { to: string; name: string }) {
     await this.emailNotificationService.sendUserWelcome(body.to, body.name);
   }
+  
+  @Post('generic')
+  async sendGenericEmail(@Body() body: { to: string; subject: string; body: string }) {
+    await this.emailNotificationService.sendGenericEmail(body.to, body.subject, body.body);
+  }
 }

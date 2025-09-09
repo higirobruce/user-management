@@ -38,12 +38,13 @@ services:
       - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
       - JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production
       - PORT=3000
-      - SMTP_HOST=your_smtp_host
-      - SMTP_PORT=your_smtp_port
-      - SMTP_SECURE=true_or_false
-      - SMTP_USER=your_smtp_username
-      - SMTP_PASSWORD=your_smtp_password
-      - SMTP_FROM_EMAIL=your_from_email@example.com
+      - SMTP_HOST=mail.gov.rw
+      - SMTP_PORT=25
+      - SMTP_SECURE=false
+      - SMTP_USER=dashboard@gov.rw
+      - SMTP_PASSWORD=GoR Dashboard
+      - SMTP_FROM_EMAIL=dashboard@gov.rw
+
     depends_on:
       - postgres
     networks:

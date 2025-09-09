@@ -8,31 +8,38 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }), // load .env globally
     MailerModule.forRootAsync({
-      useFactory: async () => ({
+      imports: [ConfigModule],
+      useFactory: async (config: ConfigService) => ({
         transport: {
-          host: 'smtp.gmail.com',
-          port: 587,
-          secure: false,
+          host: 'mail.gov.rw',// config.get<string>('SMTP_HOST'),
+          port: 25, //config.get<number>('SMTP_PORT'),
+          secure: false, // true for 465, false for other ports
           auth: {
-            user: 'brucehigiro2@gmail.com', //configService.get<string>('SMTP_USER'),
-            pass: 'mcfectxytiboymvg', //configService.get<string>('SMTP_PASSWORD'),
+            user: config.get<string>('SMTP_USER'),
+            pass: config.get<string>('SMTP_PASSWORD'),
           },
+          tls: {
+            rejectUnauthorized: false, // sometimes needed if using self-signed certs
+          },
+
         },
         defaults: {
-          from: `"No Reply" <brucehigiro2@gmail.com>`,
+          from: config.get<string>('SMTP_USER'),
         },
         template: {
-          dir: path.join(__dirname, 'templates'),
+          dir: __dirname + '/templates',
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,
           },
         },
       }),
+      inject: [ConfigService],
     }),
   ],
   controllers: [EmailNotificationController],
   providers: [EmailNotificationService],
 })
-export class EmailNotificationModule {}
+export class EmailNotificationModule { }

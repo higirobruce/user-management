@@ -8,9 +8,14 @@ import { UpdatePmsDto } from './dto/update-pms.dto';
 export class PmsController {
   constructor(private readonly pmsService: PmsService) { }
 
-  @Get('projects')
-  getProjects() {
-    return this.pmsService.getRemoteProjects();
+@Get('projects/:institution')
+  getProjects(@Param('institution') institution: string) {
+    return this.pmsService.getRemoteProjects(institution);
+  }
+
+  @Post('projects/batch')
+  getProjectsBatch(@Body('institutions') institutions: string[]) {
+    return this.pmsService.getRemoteProjectsParallel(institutions);
   }
 
 }

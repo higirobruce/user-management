@@ -44,13 +44,13 @@ export class PmsIntegrationService {
     }
   }
 
-  async fetchProjects(): Promise<any> {
+  async fetchProjects(institutionName: string): Promise<any> {
     const token = await this.getAccessToken();
     const projectsUrl = this.configService.get<string>('PROJECTS_API_URL');
     const realmHeader = this.configService.get<string>('PROJECTS_API_X_REALM');
 
     try {
-      const response$ = this.httpService.get(projectsUrl, {
+      const response$ = this.httpService.get(`${projectsUrl}/${institutionName}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'X-REALM': realmHeader,
@@ -61,6 +61,10 @@ export class PmsIntegrationService {
     } catch (error) {
       throw new HttpException('Failed to fetch projects', error.response?.status || 500);
     }
+  }
+
+  async fetchProjectsParallel(institutions: string[]): Promise<any[]> {
+    return Promise.all(institutions.map((inst) => this.fetchProjects(inst)));
   }
 }
 

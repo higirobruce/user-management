@@ -36,7 +36,11 @@ constructor(
   }
 
   // Remote integration
-  async getRemoteProjects(): Promise<any> {
-    return this.integrationService.fetchProjects();
+  async getRemoteProjects(institution: string): Promise<any> {
+    return this.integrationService.fetchProjects(institution);
+  }
+
+  async getRemoteProjectsParallel(institutions: string[]): Promise<any[]> {
+    return this.integrationService.fetchProjectsParallel(institutions);
   }
 }

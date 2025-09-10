@@ -47,6 +47,6 @@ constructor(
   async getProjectsByIds(institutions: string[], ids: (string|number)[]): Promise<any[]> {
     const all = await this.integrationService.fetchProjectsParallel(institutions);
     const flat = all.flat();
-    return flat.filter((p: any) => ids.includes(p.projectId));
+    return flat.filter((p: any) => ids.includes(p?.overview?.projectId as string | number));
   }
 }

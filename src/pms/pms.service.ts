@@ -45,8 +45,24 @@ constructor(
   }
 
   async getProjectsByIds(institutions: string[], ids: (string|number)[]): Promise<any[]> {
-    const all = await this.integrationService.fetchProjectsParallel(institutions);
-    const flat = all.flat();
-    return flat.filter((p: any) => ids.includes(p?.overview?.projectId as string | number));
+    const allInstitutionResponses = await this.integrationService.fetchProjectsParallel(institutions);
+
+    // each response: { data: [ { overview: { projectId, ... }, ... } ] }
+    const matched: any[] = [];
+
+    for (const resp of allInstitutionResponses) {
+      if (!resp?.data || !Array.isArray(resp.data)) continue;
+
+      const filtered = resp.data.filter((item: any) => {
+        const projectId = item?.overview?.projectId ?? item?.overview?.id ?? item?.id;
+        return ids.includes(projectId);
+      });
+
+      if (filtered.length) {
+        matched.push(...filtered);
+      }
+    }
+
+    return matched;
   }
 }

@@ -7,9 +7,9 @@ services:
     container_name: user_management_db
     restart: always
     environment:
-      POSTGRES_DB: user_management
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
@@ -29,37 +29,27 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=password
-      - DB_NAME=user_management
-      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-      - JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this-in-production
-      - PORT=3000
-      # - SMTP_HOST=gateway.aos.rw
-      # - SMTP_PORT=25
-      # - SMTP_SECURE=false
-      # - SMTP_USER=dashboard
-      # - SMTP_PASSWORD=Kigali@2025!
-      # - SMTP_FROM_EMAIL=dashboard
-      - SMTP_HOST=smtp.gmail.com
-      - SMTP_PORT=465
-      - SMTP_SECURE=true
-      - SMTP_USER=brucehigiro2@gmail.com
-      - SMTP_PASSWORD=mcfectxytiboymvg
-      - SMTP_FROM_EMAIL=brucehigiro2@gmail.com
-      
-      # PMS Authentication
-      - AUTH_URL=http://10.10.5.64:31456/auth/realms/risa/protocol/openid-connect/token
-      - AUTH_CLIENT_ID=risa-gbis
-      - AUTH_CLIENT_SECRET=YupXuJ1AJWSi4JYBODDSKXbdJZugIAMe
-      - AUTH_GRANT_TYPE=client_credentials
-
-      # Retrieving Projects
-      - PROJECTS_API_URL=http://10.10.5.64:30652/api/pms/integration/projects/v1
-      - PROJECTS_API_X_REALM=risa
+      - NODE_ENV=${NODE_ENV}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - PORT=${PORT}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_SECURE=${SMTP_SECURE}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
+      - AUTH_URL=${AUTH_URL}
+      - AUTH_CLIENT_ID=${AUTH_CLIENT_ID}
+      - AUTH_CLIENT_SECRET=${AUTH_CLIENT_SECRET}
+      - AUTH_GRANT_TYPE=${AUTH_GRANT_TYPE}
+      - PROJECTS_API_URL=${PROJECTS_API_URL}
+      - PROJECTS_API_X_REALM=${PROJECTS_API_X_REALM}
 
     depends_on:
       - postgres
@@ -75,8 +65,8 @@ services:
     container_name: user_management_pgadmin
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "8080:80"
     depends_on:

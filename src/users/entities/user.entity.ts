@@ -6,7 +6,7 @@ import { Availability } from 'src/availability/entities/availability.entity';
 export enum UserRole {
   ADMIN = 'admin',
   MINISTER = 'minister',
-  PS='PD',
+  PS='PS',
   CEO='CEO',
   DEPUTY_CEO='Deputy CEO',
 }

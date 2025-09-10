@@ -41,9 +41,9 @@ services:
       - SMTP_HOST=gateway.aos.rw
       - SMTP_PORT=25
       - SMTP_SECURE=false
-      - SMTP_USER=dashboard@gov.rw
+      - SMTP_USER=dashboard
       - SMTP_PASSWORD=Kigali@2025!
-      - SMTP_FROM_EMAIL=dashboard@gov.rw
+      - SMTP_FROM_EMAIL=dashboard
       # - SMTP_HOST=smtp.gmail.com
       # - SMTP_PORT=465
       # - SMTP_SECURE=true

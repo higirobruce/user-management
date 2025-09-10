@@ -13,9 +13,15 @@ export class PmsController {
     return this.pmsService.getRemoteProjects(institution);
   }
 
-  @Post('projects/batch')
+@Post('projects/batch')
   getProjectsBatch(@Body('institutions') institutions: string[]) {
     return this.pmsService.getRemoteProjectsParallel(institutions);
+  }
+
+  @Post('projects/byIds')
+  getProjectsByIds(@Body() body: { institutions: string[]; ids: (string|number)[] }) {
+    const { institutions, ids } = body;
+    return this.pmsService.getProjectsByIds(institutions, ids);
   }
 
 }

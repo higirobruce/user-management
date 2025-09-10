@@ -43,4 +43,10 @@ constructor(
   async getRemoteProjectsParallel(institutions: string[]): Promise<any[]> {
     return this.integrationService.fetchProjectsParallel(institutions);
   }
+
+  async getProjectsByIds(institutions: string[], ids: (string|number)[]): Promise<any[]> {
+    const all = await this.integrationService.fetchProjectsParallel(institutions);
+    const flat = all.flat();
+    return flat.filter((p: any) => ids.includes(p.id));
+  }
 }

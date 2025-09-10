@@ -20,10 +20,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
             user: config.get<string>('SMTP_USER'),
             pass: config.get<string>('SMTP_PASSWORD'),
           },
-          // tls: {
-          //   rejectUnauthorized: false, // sometimes needed if using self-signed certs
-          // },
-
+          tls: {
+            rejectUnauthorized: false, // sometimes needed if using self-signed certs
+          },
         },
         defaults: {
           from: config.get<string>('SMTP_USER'),

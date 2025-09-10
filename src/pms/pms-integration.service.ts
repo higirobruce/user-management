@@ -22,8 +22,6 @@ export class PmsIntegrationService {
     const clientId = this.configService.get<string>('AUTH_CLIENT_ID');
     const clientSecret = this.configService.get<string>('AUTH_CLIENT_SECRET');
     const grantType = this.configService.get<string>('AUTH_GRANT_TYPE', 'client_credentials');
-
-    console.log('----', url, clientId, clientSecret, grantType)
     const formData = new URLSearchParams({
       client_id: clientId,
       client_secret: clientSecret,
@@ -37,7 +35,6 @@ export class PmsIntegrationService {
       const { data } = await firstValueFrom(response$);
       return data.access_token;
     } catch (error) {
-      console.log(error)
       throw new HttpException('Failed to retrieve access token', error.response?.status || 500, {
         cause: error,
       });

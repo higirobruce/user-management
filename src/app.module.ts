@@ -4,15 +4,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './users/users.module';
-import { ApiKeyModule } from './api-key/api-key.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { EmailModule } from './email/email.module';
 import { EmailNotificationModule } from './email-notification/email-notification.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PmsModule } from './pms/pms.module';
 
 @Module({
   imports: [
-    // ConfigModule.forRoot({ isGlobal: true })
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -29,10 +29,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
     UserModule,
     AuthModule,
-    ApiKeyModule,
     AvailabilityModule,
     EmailModule,
     EmailNotificationModule,
+    PmsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

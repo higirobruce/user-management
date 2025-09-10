@@ -50,6 +50,15 @@ services:
       # - SMTP_USER=brucehigiro2@gmail.com
       # - SMTP_PASSWORD=mcfectxytiboymvg
       # - SMTP_FROM_EMAIL=brucehigiro2@gmail.com
+      # Authentication
+      - AUTH_URL=http://10.10.5.64:31456/auth/realms/risa/protocol/openid-connect/token
+      - AUTH_CLIENT_ID=risa-gbis
+      - AUTH_CLIENT_SECRET=YupXuJ1AJWSi4JYBODDSKXbdJZugIAMe
+      - AUTH_GRANT_TYPE=client_credentials
+
+# Retrieving Projects
+      - PROJECTS_API_URL=http://10.10.5.64:30652/api/pms/integration/projects/v1
+      - PROJECTS_API_X_REALM=risa
 
     depends_on:
       - postgres

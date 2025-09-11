@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Body, Get, ForbiddenException, Delete } from '@nestjs/common';
+import { Controller, Post, UseGuards, Body, Get, ForbiddenException, Delete, Param, Patch } from '@nestjs/common';
 import { AvailabilityService } from './availability.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -7,6 +7,7 @@ import { UserRole } from '../users/entities/user.entity';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { CreateAvailabilityDto } from './dto/create-availability.dto';
+import { UpdateAvailabilityDto } from './dto/update-availability.dto';
 
 @Controller('availability')
 export class AvailabilityController {
@@ -40,6 +41,16 @@ export class AvailabilityController {
     return this.availabilityService.findAll();
   }
 
+  //update availability
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() updateAvailabilityDto: UpdateAvailabilityDto,
+  ) {
+    return this.availabilityService.update(id, updateAvailabilityDto);
+  }
+
   //delete all availabilities
   @UseGuards(JwtAuthGuard)
   @Delete('all')
@@ -49,4 +60,5 @@ export class AvailabilityController {
     }
     return this.availabilityService.deleteAll();
   }
+
 }

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Availability } from './entities/availability.entity';
 import { User } from '../users/entities/user.entity';
 import { CreateAvailabilityDto } from './dto/create-availability.dto';
+import { UpdateAvailabilityDto } from './dto/update-availability.dto';
 
 @Injectable()
 export class AvailabilityService {
@@ -61,7 +62,7 @@ export class AvailabilityService {
     return this.availabilityRepository.delete({});
   }
 
-  async update(id: string, updateAvailabilityDto: CreateAvailabilityDto) {
+  async update(id: string, updateAvailabilityDto: UpdateAvailabilityDto) {
     const availability = await this.availabilityRepository.findOne({
       where: { id },
     });

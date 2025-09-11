@@ -46,9 +46,10 @@ export class AvailabilityController {
   @Patch(':id')
   async update(
     @Param('id') id: string,
+    @CurrentUser() currentUser: User,
     @Body() updateAvailabilityDto: UpdateAvailabilityDto,
   ) {
-    return this.availabilityService.update(id, updateAvailabilityDto);
+    return this.availabilityService.update(id, currentUser, updateAvailabilityDto);
   }
 
   //update availability
@@ -56,8 +57,9 @@ export class AvailabilityController {
   @Delete(':id')
   async delete(
     @Param('id') id: string,
+    @CurrentUser() currentUser: User,
   ) {
-    return this.availabilityService.delete(id);
+    return this.availabilityService.delete(id, currentUser);
   }
 
   //delete all availabilities

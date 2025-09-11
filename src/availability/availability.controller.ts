@@ -51,6 +51,15 @@ export class AvailabilityController {
     return this.availabilityService.update(id, updateAvailabilityDto);
   }
 
+  //update availability
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async delete(
+    @Param('id') id: string,
+  ) {
+    return this.availabilityService.delete(id);
+  }
+
   //delete all availabilities
   @UseGuards(JwtAuthGuard)
   @Delete('all')

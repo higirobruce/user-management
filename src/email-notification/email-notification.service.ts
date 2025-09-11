@@ -2,13 +2,29 @@ import { Injectable } from '@nestjs/common';
 import { CreateEmailNotificationDto } from './dto/create-email-notification.dto';
 import { UpdateEmailNotificationDto } from './dto/update-email-notification.dto';
 import { MailerService } from '@nestjs-modules/mailer';
+import * as nodemailer from 'nodemailer'
+import { from } from 'rxjs';
 
 @Injectable()
 export class EmailNotificationService {
-  constructor(private mailerService: MailerService) {}
+  private transporter;
+
+  constructor(private mailerService: MailerService) {
+    this.transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST1,
+      port: Number(process.env.SMTP_PORT),
+      secure: process.env.SMTP_SECURE === 'true',  // true for 465, false for 587
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+      from: process.env.SMTP_USER,
+      requireTLS: process.env.SMTP_REQUIRE_TLS === 'true',
+    });
+  }
 
   async sendUserWelcome(to: string, name: string) {
-    await this.mailerService.sendMail({
+    await this.transporter.sendMail({
       to: to,
       subject: 'Welcome to Our Application!',
       // template: 'welcome',
@@ -23,7 +39,7 @@ export class EmailNotificationService {
   }
 
   async sendCommentNotification(to: string, actionTitle: string, actionDescription: string, commenterName: string, commentContent: string) {
-    await this.mailerService.sendMail({
+    await this.transporter.sendMail({
       to: to,
       subject: 'New Comment on Your Post',
       template: 'comment',
@@ -37,10 +53,13 @@ export class EmailNotificationService {
   }
 
   async sendGenericEmail(to: string, subject: string, body: string) {
-    await this.mailerService.sendMail({
+    let res = await this.transporter.sendMail({
+      from: process.env.SMTP_USER,
       to: to,
       subject: subject,
       html: body,
     });
+
+    console.log('🚀 sendGenericEmail →', res);
   }
 }

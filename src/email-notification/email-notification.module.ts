@@ -11,30 +11,23 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     ConfigModule.forRoot({ isGlobal: true }), // load .env globally
     MailerModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => ({
-        transport: {
-          host: config.get<string>('SMTP_HOST'),
-          port: config.get<number>('SMTP_PORT'),
-          secure: config.get<boolean>('SMTP_SECURE'), // true for 465, false for other ports
+      useFactory: async (config: ConfigService) => {
+        let transportConfig = {
+          host: config.get<string>('SMTP_HOST1'),
+          port: Number(config.get<string>('SMTP_PORT')),
+          secure: config.get<string>('SMTP_SECURE') === 'true',  // parse manually
           auth: {
             user: config.get<string>('SMTP_USER'),
             pass: config.get<string>('SMTP_PASSWORD'),
           },
-          tls: {
-            rejectUnauthorized: false, // sometimes needed if using self-signed certs
-          },
-        },
-        defaults: {
-          from: config.get<string>('SMTP_USER'),
-        },
-        template: {
-          dir: __dirname + '/templates',
-          adapter: new HandlebarsAdapter(),
-          options: {
-            strict: true,
-          },
-        },
-      }),
+          from: config.get<string>('SMTP_FROM_EMAIL'),
+          requireTLS: config.get<string>('SMTP_REQUIRE_TLS') === 'true', // parse manually
+        }
+        return {
+          transport: transportConfig,
+          
+        }
+      },
       inject: [ConfigService],
     }),
   ],

@@ -11,7 +11,7 @@ export class EmailNotificationService {
 
   constructor(private mailerService: MailerService) {
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST1,
+      host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
       secure: process.env.SMTP_SECURE === 'true',  // true for 465, false for 587
       auth: {

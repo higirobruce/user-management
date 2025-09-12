@@ -58,7 +58,7 @@ export class EmailNotificationService {
       from: process.env.SMTP_USER,
       to,
       subject,
-      text: body,
+      html: body,
     };
 
     if (files && files.length > 0) {

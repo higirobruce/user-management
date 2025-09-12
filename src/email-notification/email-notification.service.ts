@@ -11,7 +11,7 @@ export class EmailNotificationService {
 
   constructor(private mailerService: MailerService) {
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
+      host: process.env.SMTP_HOST1,
       port: Number(process.env.SMTP_PORT),
       secure: process.env.SMTP_SECURE === 'true',  // true for 465, false for 587
       auth: {
@@ -52,14 +52,25 @@ export class EmailNotificationService {
     });
   }
 
-  async sendGenericEmail(to: string, subject: string, body: string) {
-    let res = await this.transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: to,
-      subject: subject,
-      html: body,
-    });
+  async sendGenericEmail(to: string, subject: string, body: string, files: Express.Multer.File[]) {
 
-    console.log('🚀 sendGenericEmail →', res);
+    const mailOptions: any = {
+      from: process.env.SMTP_USER,
+      to,
+      subject,
+      text: body,
+    };
+
+    if (files && files.length > 0) {
+      mailOptions.attachments = files.map((file) => ({
+        filename: file.originalname,
+        content: Buffer.from(file.buffer), // ensure it's a Buffer
+        contentType: file.mimetype,        // helps Nodemailer handle it
+      }));
+    }
+
+    let res = await this.transporter.sendMail(mailOptions);
+
+    return res
   }
 }

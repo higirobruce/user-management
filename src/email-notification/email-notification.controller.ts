@@ -1,17 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { EmailNotificationService } from './email-notification.service';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('email-notification')
 export class EmailNotificationController {
-  constructor(private readonly emailNotificationService: EmailNotificationService) {}
+  constructor(private readonly emailNotificationService: EmailNotificationService) { }
 
   @Post('welcome')
   async sendWelcomeEmail(@Body() body: { to: string; name: string }) {
     await this.emailNotificationService.sendUserWelcome(body.to, body.name);
   }
-  
+
   @Post('generic')
-  async sendGenericEmail(@Body() body: { to: string; subject: string; body: string }) {
-    await this.emailNotificationService.sendGenericEmail(body.to, body.subject, body.body);
+  @UseInterceptors(FilesInterceptor('attachments')) // expects field name "attachments"
+  async sendGenericEmail(
+    @Body() body: { to: string; subject: string; body: string },
+    @UploadedFiles() files?: Express.Multer.File[],
+  ) {
+    await this.emailNotificationService.sendGenericEmail(
+      body.to,
+      body.subject,
+      body.body,
+      files,
+    );
   }
 }

@@ -9,6 +9,7 @@ import { EmailModule } from './email/email.module';
 import { EmailNotificationModule } from './email-notification/email-notification.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PmsModule } from './pms/pms.module';
+import { EventModule } from './cabinet-event/event.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { PmsModule } from './pms/pms.module';
         username: config.get<string>('DB_USERNAME'),
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_NAME'),
-        autoLoadEntities: true,
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        // autoLoadEntities: true,
         synchronize: true, // careful in production!
       }),
       inject: [ConfigService],
@@ -33,6 +35,7 @@ import { PmsModule } from './pms/pms.module';
     EmailModule,
     EmailNotificationModule,
     PmsModule,
+    EventModule,
   ],
   controllers: [AppController],
   providers: [AppService],

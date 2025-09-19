@@ -5,6 +5,9 @@ export class CreateAvailabilityDto {
   @IsEnum(AbsenceReason)
   reason: AbsenceReason;
 
+  @IsOptional()
+  description: string;
+
   @IsDateString()
   startDate: string;
 

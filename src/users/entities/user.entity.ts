@@ -9,6 +9,8 @@ export enum UserRole {
   PS='PS',
   CEO='CEO',
   DEPUTY_CEO='Deputy CEO',
+  PRIME_MINISTER = 'Prime Minister',
+  MINISTER_OPM = 'Minister at OPM'
 }
 
 export enum UserStatus {

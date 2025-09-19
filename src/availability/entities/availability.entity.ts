@@ -25,6 +25,9 @@ export class Availability {
   })
   reason: AbsenceReason;
 
+   @Column({ type: 'text', nullable: true })
+  description: string
+
   @Column()
   startDate: Date;
 

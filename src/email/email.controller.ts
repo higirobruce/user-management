@@ -2,12 +2,19 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { EmailService } from './email.service';
 import { UpdateEmailDto } from './dto/update-email.dto';
 import { CreateCommentNotificationDto } from './dto/create-comment-notification.dto';
+import { ApiBasicAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('email')
+@ApiBasicAuth()
+
 export class EmailController {
   constructor(private readonly emailService: EmailService) {}
 
   @Post('comment')
+  @ApiOperation({ summary: 'Send a comment notification email' })
+  @ApiResponse({ status: 200, description: 'Email sent successfully.' })
+  @ApiResponse({ status: 400, description: 'Bad request. Invalid email data.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
   create(@Body() createCommentNotificationDto: CreateCommentNotificationDto) {
     return this.emailService.sendCommentNotification(
       createCommentNotificationDto.to, 
@@ -18,6 +25,9 @@ export class EmailController {
   }
 
   @Get('test')
+  @ApiOperation({ summary: 'Test email sending' })
+  @ApiResponse({ status: 200, description: 'Email sent successfully.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
   test() {
     return {message:'Email sent successfully'};
   }

@@ -1,24 +1,20 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
 
 export class CreateEmailNotificationDto {
 
+    @ApiProperty()
     @IsEmail()
     @IsNotEmpty()
     to: string;
 
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    actionTitle: string;
+    subject: string;
 
+    @ApiProperty()
     @IsString()
     @IsNotEmpty()
-    actionDescription: string;
-
-    @IsString()
-    @IsNotEmpty()
-    commenterName: string;
-
-    @IsString()
-    @IsNotEmpty()
-    commentContent: string;
+    body: string;
 }

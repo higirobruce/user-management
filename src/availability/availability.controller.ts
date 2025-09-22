@@ -8,6 +8,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { CreateAvailabilityDto } from './dto/create-availability.dto';
 import { UpdateAvailabilityDto } from './dto/update-availability.dto';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('availability')
 export class AvailabilityController {
@@ -15,6 +16,10 @@ export class AvailabilityController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
+  @ApiOperation({ summary: 'Create a new availability' })
+  @ApiResponse({ status: 201, description: 'The availability has been successfully created.' })
+  @ApiResponse({ status: 400, description: 'Invalid input data.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. You do not have permission to create availabilities.' })
   async create(
     @CurrentUser() currentUser: User,
     @Body() createAvailabilityDto: CreateAvailabilityDto,
@@ -30,6 +35,9 @@ export class AvailabilityController {
 
   @UseGuards(JwtAuthGuard)
   @Get('mine')
+  @ApiOperation({ summary: 'Get all availabilities for the current user' })
+  @ApiResponse({ status: 200, description: 'A list of availabilities.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. You do not have permission to access availabilities.' })
   async findMine(@CurrentUser() user: User) {
     return this.availabilityService.findForUser(user.id);
   }
@@ -37,6 +45,9 @@ export class AvailabilityController {
   //get all availabilities
   @UseGuards(JwtAuthGuard)
   @Get('all')
+  @ApiOperation({ summary: 'Get all availabilities' })
+  @ApiResponse({ status: 200, description: 'A list of all availabilities.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. You do not have permission to access all availabilities.' })
   async findAll() {
     return this.availabilityService.findAll();
   }
@@ -44,6 +55,11 @@ export class AvailabilityController {
   //update availability
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
+  @ApiOperation({ summary: 'Update an availability' })
+  @ApiResponse({ status: 200, description: 'The availability has been successfully updated.' })
+  @ApiResponse({ status: 400, description: 'Invalid input data.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. You do not have permission to update this availability.' })
+  @ApiResponse({ status: 404, description: 'Availability not found.' })
   async update(
     @Param('id') id: string,
     @CurrentUser() currentUser: User,
@@ -55,6 +71,10 @@ export class AvailabilityController {
   //update availability
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete an availability' })
+  @ApiResponse({ status: 200, description: 'The availability has been successfully deleted.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. You do not have permission to delete this availability.' })
+  @ApiResponse({ status: 404, description: 'Availability not found.' })
   async delete(
     @Param('id') id: string,
     @CurrentUser() currentUser: User,
@@ -65,9 +85,13 @@ export class AvailabilityController {
   //delete all availabilities
   @UseGuards(JwtAuthGuard)
   @Delete('all')
+  @ApiOperation({ summary: 'Delete all availabilities' })
+  @ApiResponse({ status: 200, description: 'All availabilities have been successfully deleted.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. You do not have permission to delete all availabilities.' })
   async deleteAll(@CurrentUser() user: User) {
     if (user.role !== UserRole.ADMIN) {
       throw new ForbiddenException('You are not allowed to delete all availabilities.');
+  
     }
     return this.availabilityService.deleteAll();
   }

@@ -102,7 +102,7 @@ export class AuthService {
     const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
     
     user.passwordResetToken = hashedToken;
-    user.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    user.passwordResetExpires = new Date(Date.now() + 8 * 60 * 60 * 1000); // 8 hours
 
     await this.userRepository.save(user);
 

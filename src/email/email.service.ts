@@ -40,5 +40,7 @@ export class EmailService {
         commentContent: commentContent,
       },
     });
+
+    return {message:'Email sent successfully'};
   }
 }

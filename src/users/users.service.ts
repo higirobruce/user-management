@@ -6,13 +6,14 @@ import { User, UserStatus } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.userRepository.findOne({
@@ -24,7 +25,7 @@ export class UsersService {
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
-    
+
     const user = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
@@ -40,6 +41,9 @@ export class UsersService {
   }
 
   async findOne(id: string): Promise<User> {
+    if (!isUUID(id)) {
+      throw new BadRequestException('Invalid user ID');
+    }
     const user = await this.userRepository.findOne({
       where: { id },
       select: ['id', 'firstName', 'lastName', 'email', 'ministry', 'role', 'status', 'createdAt', 'updatedAt'],
@@ -49,12 +53,14 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
+    //if id is not uuid
+
     return user;
   }
 
   async findByEmail(email: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { email } });
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -96,7 +102,7 @@ export class UsersService {
     }
 
     const hashedNewPassword = await bcrypt.hash(changePasswordDto.newPassword, 12);
-    
+
     user.password = hashedNewPassword;
     user.refreshToken = null; // Invalidate all sessions
 

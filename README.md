@@ -98,6 +98,23 @@ A comprehensive user management service built with NestJS, featuring JWT authent
 
 - `POST /api-keys` - Create a new API key (Requires JWT authentication)
 
+### Cabinet Event Endpoints
+
+- `POST /cabinet-event` - Create a new event
+- `GET /cabinet-event` - Get all events
+- `GET /cabinet-event/:id` - Get event by ID
+- `PATCH /cabinet-event/:id` - Update event by ID
+- `DELETE /cabinet-event/:id` - Delete event by ID
+
+### Availability Endpoints
+
+- `POST /availability` - Create availability
+- `GET /availability/mine` - Get current user's availability
+- `GET /availability/all` - Get all availabilities
+- `PATCH /availability/:id` - Update availability by ID
+- `DELETE /availability/:id` - Delete availability by ID
+- `DELETE /availability/all` - Delete all availabilities (Admin only)
+
 ## User Roles
 
 ### Admin
@@ -119,17 +136,7 @@ A comprehensive user management service built with NestJS, featuring JWT authent
 ## Environment Variables
 
 | Variable | Description | Default |
-|----------|-------------|---------|
-| `DB_HOST` | Database host | localhost |
-| `DB_PORT` | Database port | 5432 |
-| `DB_USERNAME` | Database username | postgres |
-| `DB_PASSWORD` | Database password | password |
-| `DB_NAME` | Database name | user_management |
-| `JWT_SECRET` | JWT secret key | your-secret-key |
-| `JWT_REFRESH_SECRET` | JWT refresh secret key | your-refresh-secret-key |
-| `PORT` | Application port | 3000 |
-| `NODE_ENV` | Environment | development |
-
+|----------|-------------|---------|\n| `DB_HOST` | Database host | localhost |\n| `DB_PORT` | Database port | 5432 |\n| `DB_USERNAME` | Database username | postgres |\n| `DB_PASSWORD` | Database password | password |\n| `DB_NAME` | Database name | user_management |\n| `JWT_SECRET` | JWT secret key | your-secret-key |\n| `JWT_REFRESH_SECRET` | JWT refresh secret key | your-refresh-secret-key |\n| `PORT` | Application port | 3000 |\n| `NODE_ENV` | Environment | development |\n
 ## Security Features
 
 - **Password Hashing**: All passwords are hashed using bcryptjs with salt rounds
@@ -316,6 +323,101 @@ curl -X POST http://localhost:3000/api-keys \
 ```bash
 curl -X GET http://localhost:3000/some-protected-route \
   -H "x-api-key: YOUR_API_KEY"
+```
+
+### Cabinet Event API Examples
+
+#### Create a new event
+```bash
+curl -X POST http://localhost:3000/cabinet-event \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Team Meeting",
+    "description": "Weekly team sync-up",
+    "venue": "Office Building",
+    "startDate": "2024-07-20T10:00:00Z",
+    "endDate": "2024-07-20T11:00:00Z"
+  }'
+```
+
+#### Get all events
+```bash
+curl -X GET http://localhost:3000/cabinet-event \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+#### Get event by ID
+```bash
+curl -X GET http://localhost:3000/cabinet-event/EVENT_ID \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+#### Update event by ID
+```bash
+curl -X PATCH http://localhost:3000/cabinet-event/EVENT_ID \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Updated Team Meeting",
+    "venue": "Virtual Meeting"
+  }'
+```
+
+#### Delete event by ID
+```bash
+curl -X DELETE http://localhost:3000/cabinet-event/EVENT_ID \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Availability API Examples
+
+#### Create availability
+```bash
+curl -X POST http://localhost:3000/availability \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "date": "2024-07-25",
+    "startTime": "09:00",
+    "endTime": "17:00",
+    "isAvailable": true
+  }'
+```
+
+#### Get current user's availability
+```bash
+curl -X GET http://localhost:3000/availability/mine \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+#### Get all availabilities (Admin only)
+```bash
+curl -X GET http://localhost:3000/availability/all \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
+```
+
+#### Update availability by ID
+```bash
+curl -X PATCH http://localhost:3000/availability/AVAILABILITY_ID \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isAvailable": false,
+    "endTime": "12:00"
+  }'
+```
+
+#### Delete availability by ID
+```bash
+curl -X DELETE http://localhost:3000/availability/AVAILABILITY_ID \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+#### Delete all availabilities (Admin only)
+```bash
+curl -X DELETE http://localhost:3000/availability/all \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
 ```
 
 ## Production Deployment

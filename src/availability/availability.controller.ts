@@ -8,13 +8,15 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { CreateAvailabilityDto } from './dto/create-availability.dto';
 import { UpdateAvailabilityDto } from './dto/update-availability.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('availability')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class AvailabilityController {
-  constructor(private readonly availabilityService: AvailabilityService) {}
+  constructor(private readonly availabilityService: AvailabilityService) { }
 
-  @UseGuards(JwtAuthGuard)
+
   @Post()
   @ApiOperation({ summary: 'Create a new availability' })
   @ApiResponse({ status: 201, description: 'The availability has been successfully created.' })
@@ -33,7 +35,7 @@ export class AvailabilityController {
     return this.availabilityService.create(targetUserId, createAvailabilityDto);
   }
 
-  @UseGuards(JwtAuthGuard)
+
   @Get('mine')
   @ApiOperation({ summary: 'Get all availabilities for the current user' })
   @ApiResponse({ status: 200, description: 'A list of availabilities.' })
@@ -43,7 +45,7 @@ export class AvailabilityController {
   }
 
   //get all availabilities
-  @UseGuards(JwtAuthGuard)
+
   @Get('all')
   @ApiOperation({ summary: 'Get all availabilities' })
   @ApiResponse({ status: 200, description: 'A list of all availabilities.' })
@@ -53,7 +55,7 @@ export class AvailabilityController {
   }
 
   //update availability
-  @UseGuards(JwtAuthGuard)
+
   @Patch(':id')
   @ApiOperation({ summary: 'Update an availability' })
   @ApiResponse({ status: 200, description: 'The availability has been successfully updated.' })
@@ -69,7 +71,7 @@ export class AvailabilityController {
   }
 
   //update availability
-  @UseGuards(JwtAuthGuard)
+
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an availability' })
   @ApiResponse({ status: 200, description: 'The availability has been successfully deleted.' })
@@ -83,7 +85,7 @@ export class AvailabilityController {
   }
 
   //delete all availabilities
-  @UseGuards(JwtAuthGuard)
+
   @Delete('all')
   @ApiOperation({ summary: 'Delete all availabilities' })
   @ApiResponse({ status: 200, description: 'All availabilities have been successfully deleted.' })
@@ -91,7 +93,7 @@ export class AvailabilityController {
   async deleteAll(@CurrentUser() user: User) {
     if (user.role !== UserRole.ADMIN) {
       throw new ForbiddenException('You are not allowed to delete all availabilities.');
-  
+
     }
     return this.availabilityService.deleteAll();
   }

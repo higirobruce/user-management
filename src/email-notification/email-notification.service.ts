@@ -61,6 +61,9 @@ export class EmailNotificationService {
       html: body,
     };
 
+    console.log(process.env.SMTP_USER)
+    console.log(process.env.SMTP_FROM_EMAIL)
+
     if (files && files.length > 0) {
       mailOptions.attachments = files.map((file) => ({
         filename: file.originalname,
@@ -69,8 +72,10 @@ export class EmailNotificationService {
       }));
     }
 
-    let res = await this.transporter.sendMail(mailOptions);
+    this.transporter.sendMail(mailOptions);
 
-    return res
+    return {
+      message: 'Your message is being processed',
+    }
   }
 }

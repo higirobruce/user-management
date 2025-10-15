@@ -30,7 +30,7 @@ export class EmailNotificationController {
     @Body() body: CreateEmailNotificationDto,
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
-    await this.emailNotificationService.sendGenericEmail(
+    return await this.emailNotificationService.sendGenericEmail(
       body.to,
       body.subject,
       body.body,

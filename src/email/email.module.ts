@@ -10,7 +10,7 @@ import * as path from 'path';
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: async () => ({
         transport: {
           host: process.env.SMTP_HOST,
           port: process.env.SMTP_PORT,

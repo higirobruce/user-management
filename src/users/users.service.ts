@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User, UserStatus } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -13,7 +17,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) { }
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.userRepository.findOne({
@@ -36,7 +40,17 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     return this.userRepository.find({
-      select: ['id', 'firstName', 'lastName', 'email', 'ministry', 'role', 'status', 'createdAt', 'updatedAt'],
+      select: [
+        'id',
+        'firstName',
+        'lastName',
+        'email',
+        'ministry',
+        'role',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
     });
   }
 
@@ -46,7 +60,17 @@ export class UsersService {
     }
     const user = await this.userRepository.findOne({
       where: { id },
-      select: ['id', 'firstName', 'lastName', 'email', 'ministry', 'role', 'status', 'createdAt', 'updatedAt'],
+      select: [
+        'id',
+        'firstName',
+        'lastName',
+        'email',
+        'ministry',
+        'role',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
     });
 
     if (!user) {
@@ -68,6 +92,10 @@ export class UsersService {
     return user;
   }
 
+  async findUsersByIds(userIds: string[]): Promise<User[]> {
+    return this.userRepository.find({ where: { id: In(userIds) } });
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
 
@@ -85,7 +113,10 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async changePassword(email: string, changePasswordDto: ChangePasswordDto): Promise<void> {
+  async changePassword(
+    email: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<void> {
     const user = await this.userRepository.findOne({ where: { email } });
 
     if (!user) {
@@ -101,7 +132,10 @@ export class UsersService {
       throw new BadRequestException('Current password is incorrect');
     }
 
-    const hashedNewPassword = await bcrypt.hash(changePasswordDto.newPassword, 12);
+    const hashedNewPassword = await bcrypt.hash(
+      changePasswordDto.newPassword,
+      12,
+    );
 
     user.password = hashedNewPassword;
     user.refreshToken = null; // Invalidate all sessions
@@ -123,7 +157,7 @@ export class UsersService {
 
   async activate(id: string): Promise<User> {
     const user = await this.findOne(id);
-    user.status = UserStatus.ACTIVE
+    user.status = UserStatus.ACTIVE;
     return this.userRepository.save(user);
   }
 }

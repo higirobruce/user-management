@@ -1,3 +1,4 @@
+import { NotificationModule } from './notification/notification.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -36,8 +37,9 @@ import { EventModule } from './cabinet-event/event.module';
     EmailNotificationModule,
     PmsModule,
     EventModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

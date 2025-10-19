@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreateEmailNotificationDto } from './dto/create-email-notification.dto';
-import { UpdateEmailNotificationDto } from './dto/update-email-notification.dto';
 import { MailerService } from '@nestjs-modules/mailer';
-import * as nodemailer from 'nodemailer'
-import { from } from 'rxjs';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailNotificationService {
@@ -13,7 +10,7 @@ export class EmailNotificationService {
     this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
-      secure: process.env.SMTP_SECURE === 'true',  // true for 465, false for 587
+      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for 587
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
@@ -38,7 +35,13 @@ export class EmailNotificationService {
     });
   }
 
-  async sendCommentNotification(to: string, actionTitle: string, actionDescription: string, commenterName: string, commentContent: string) {
+  async sendCommentNotification(
+    to: string,
+    actionTitle: string,
+    actionDescription: string,
+    commenterName: string,
+    commentContent: string,
+  ) {
     await this.transporter.sendMail({
       to: to,
       subject: 'New Comment on Your Post',
@@ -52,8 +55,12 @@ export class EmailNotificationService {
     });
   }
 
-  async sendGenericEmail(to: string, subject: string, body: string, files: Express.Multer.File[]) {
-
+  async sendGenericEmail(
+    to: string,
+    subject: string,
+    body: string,
+    files: Express.Multer.File[],
+  ) {
     const mailOptions: any = {
       from: process.env.SMTP_USER,
       to,
@@ -61,14 +68,14 @@ export class EmailNotificationService {
       html: body,
     };
 
-    console.log(process.env.SMTP_USER)
-    console.log(process.env.SMTP_FROM_EMAIL)
+    console.log(process.env.SMTP_USER);
+    console.log(process.env.SMTP_FROM_EMAIL);
 
     if (files && files.length > 0) {
       mailOptions.attachments = files.map((file) => ({
         filename: file.originalname,
         content: Buffer.from(file.buffer), // ensure it's a Buffer
-        contentType: file.mimetype,        // helps Nodemailer handle it
+        contentType: file.mimetype, // helps Nodemailer handle it
       }));
     }
 
@@ -76,6 +83,6 @@ export class EmailNotificationService {
 
     return {
       message: 'Your message is being processed',
-    }
+    };
   }
 }

@@ -7,11 +7,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class EventService {
-
   constructor(
     @InjectRepository(CabinetEvent)
-    private eventRepository: Repository<CabinetEvent>) 
-  {}
+    private eventRepository: Repository<CabinetEvent>,
+  ) {}
 
   async create(createEventDto: CreateEventDto) {
     return await this.eventRepository.save(createEventDto);

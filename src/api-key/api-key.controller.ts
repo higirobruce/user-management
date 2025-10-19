@@ -9,16 +9,25 @@ import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 @Controller('api-keys')
 @ApiBearerAuth()
 export class ApiKeyController {
-  constructor(private readonly apiKeyService: ApiKeyService) { }
+  constructor(private readonly apiKeyService: ApiKeyService) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'Create an API key' })
-  @ApiResponse({ status: 201, description: 'The API key has been successfully created.' })
+  @ApiResponse({
+    status: 201,
+    description: 'The API key has been successfully created.',
+  })
   @ApiResponse({ status: 400, description: 'Invalid input data.' })
-  @ApiResponse({ status: 403, description: 'Forbidden. You do not have permission to create API keys.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden. You do not have permission to create API keys.',
+  })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async create(@CurrentUser() user: User, @Body() createApiKeyDto: CreateApiKeyDto) {
+  async create(
+    @CurrentUser() user: User,
+    @Body() createApiKeyDto: CreateApiKeyDto,
+  ) {
     const apiKey = await this.apiKeyService.create(user, createApiKeyDto);
     // Return only the key and metadata, not the full entity with user object
     return {
@@ -34,9 +43,12 @@ export class ApiKeyController {
   @Get()
   @ApiOperation({ summary: 'Get all API keys' })
   @ApiResponse({ status: 200, description: 'A list of API keys.' })
-  @ApiResponse({ status: 403, description: 'Forbidden. You do not have permission to view API keys.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden. You do not have permission to view API keys.',
+  })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async findAll(@CurrentUser() user: User) {
+  async findAll() {
     return this.apiKeyService.findAll();
   }
 }

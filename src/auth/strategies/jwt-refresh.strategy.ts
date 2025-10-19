@@ -8,7 +8,10 @@ import { TokenPayload } from '../auth.service';
 import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
-export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
+export class JwtRefreshStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-refresh',
+) {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -22,12 +25,14 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
 
   async validate(req: Request, payload: TokenPayload): Promise<any> {
     const refreshToken = req.get('Authorization')?.replace('Bearer', '').trim();
-    const user = await this.userRepository.findOne({ where: { id: payload.sub } });
-    
+    const user = await this.userRepository.findOne({
+      where: { id: payload.sub },
+    });
+
     if (!user || user.status === 'inactive') {
       throw new UnauthorizedException();
     }
-    
+
     return { ...payload, refreshToken };
   }
 }

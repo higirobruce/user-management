@@ -1,15 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFiles, UseInterceptors, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UploadedFiles,
+  UseInterceptors,
+  UseGuards,
+} from '@nestjs/common';
 import { EmailNotificationService } from './email-notification.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateEmailNotificationDto } from './dto/create-email-notification.dto';
 
 @Controller('email-notification')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 export class EmailNotificationController {
-  constructor(private readonly emailNotificationService: EmailNotificationService) { }
+  constructor(
+    private readonly emailNotificationService: EmailNotificationService,
+  ) {}
 
   @Post('welcome')
   @ApiOperation({ summary: 'Send a welcome email' })

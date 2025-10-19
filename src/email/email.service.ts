@@ -28,7 +28,13 @@ export class EmailService {
     });
   }
 
-  async sendCommentNotification(to: string, actionTitle: string, actionDescription: string, commenterName: string, commentContent: string) {
+  async sendCommentNotification(
+    to: string,
+    actionTitle: string,
+    actionDescription: string,
+    commenterName: string,
+    commentContent: string,
+  ) {
     await this.mailerService.sendMail({
       to: to,
       subject: 'New Comment on Action',
@@ -41,6 +47,6 @@ export class EmailService {
       },
     });
 
-    return {message:'Email sent successfully'};
+    return { message: 'Email sent successfully' };
   }
 }

@@ -21,7 +21,10 @@ export class PmsIntegrationService {
     const url = this.configService.get<string>('AUTH_URL');
     const clientId = this.configService.get<string>('AUTH_CLIENT_ID');
     const clientSecret = this.configService.get<string>('AUTH_CLIENT_SECRET');
-    const grantType = this.configService.get<string>('AUTH_GRANT_TYPE', 'client_credentials');
+    const grantType = this.configService.get<string>(
+      'AUTH_GRANT_TYPE',
+      'client_credentials',
+    );
     const formData = new URLSearchParams({
       client_id: clientId,
       client_secret: clientSecret,
@@ -29,15 +32,23 @@ export class PmsIntegrationService {
     });
 
     try {
-      const response$ = this.httpService.post<TokenResponse>(url, formData.toString(), {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      });
+      const response$ = this.httpService.post<TokenResponse>(
+        url,
+        formData.toString(),
+        {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        },
+      );
       const { data } = await firstValueFrom(response$);
       return data.access_token;
     } catch (error) {
-      throw new HttpException('Failed to retrieve access token', error.response?.status || 500, {
-        cause: error,
-      });
+      throw new HttpException(
+        'Failed to retrieve access token',
+        error.response?.status || 500,
+        {
+          cause: error,
+        },
+      );
     }
   }
 
@@ -47,16 +58,22 @@ export class PmsIntegrationService {
     const realmHeader = this.configService.get<string>('PROJECTS_API_X_REALM');
 
     try {
-      const response$ = this.httpService.get(`${projectsUrl}/${institutionName}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'X-REALM': realmHeader,
+      const response$ = this.httpService.get(
+        `${projectsUrl}/${institutionName}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'X-REALM': realmHeader,
+          },
         },
-      });
+      );
       const { data } = await firstValueFrom(response$);
       return data;
     } catch (error) {
-      throw new HttpException('Failed to fetch projects', error.response?.status || 500);
+      throw new HttpException(
+        'Failed to fetch projects',
+        error.response?.status || 500,
+      );
     }
   }
 
@@ -64,4 +81,3 @@ export class PmsIntegrationService {
     return Promise.all(institutions.map((inst) => this.fetchProjects(inst)));
   }
 }
-

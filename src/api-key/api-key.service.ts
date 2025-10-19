@@ -28,7 +28,10 @@ export class ApiKeyService {
   }
 
   async findByKey(key: string): Promise<ApiKey> {
-    return this.apiKeyRepository.findOne({ where: { key }, relations: ['user'] });
+    return this.apiKeyRepository.findOne({
+      where: { key },
+      relations: ['user'],
+    });
   }
 
   async validateKey(key: string): Promise<User> {

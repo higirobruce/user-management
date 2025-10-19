@@ -1,12 +1,17 @@
-import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 import { LoginDto } from './dto/login.dto';
-import { User } from 'src/users/entities/user.entity';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { User } from '../users/entities/user.entity';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 
 export interface TokenPayload {
   sub: string;
@@ -41,7 +46,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
-    
+
     const user = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
@@ -69,14 +74,20 @@ export class AuthService {
     return tokens;
   }
 
-  async refreshTokens(userId: string, refreshToken: string): Promise<AuthTokens> {
+  async refreshTokens(
+    userId: string,
+    refreshToken: string,
+  ): Promise<AuthTokens> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
-    
+
     if (!user || !user.refreshToken) {
       throw new UnauthorizedException('Access denied');
     }
 
-    const refreshTokenMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+    const refreshTokenMatch = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken,
+    );
     if (!refreshTokenMatch) {
       throw new UnauthorizedException('Access denied');
     }
@@ -93,14 +104,17 @@ export class AuthService {
 
   async forgotPassword(email: string): Promise<void> {
     const user = await this.userRepository.findOne({ where: { email } });
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
-    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-    
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
     user.passwordResetToken = hashedToken;
     user.passwordResetExpires = new Date(Date.now() + 8 * 60 * 60 * 1000); // 8 hours
 
@@ -113,7 +127,7 @@ export class AuthService {
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-    
+
     const user = await this.userRepository.findOne({
       where: {
         passwordResetToken: hashedToken,
@@ -125,7 +139,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 12);
-    
+
     user.password = hashedPassword;
     user.passwordResetToken = null;
     user.passwordResetExpires = null;
@@ -159,8 +173,13 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  private async updateRefreshToken(userId: string, refreshToken: string): Promise<void> {
+  private async updateRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<void> {
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 12);
-    await this.userRepository.update(userId, { refreshToken: hashedRefreshToken });
+    await this.userRepository.update(userId, {
+      refreshToken: hashedRefreshToken,
+    });
   }
 }

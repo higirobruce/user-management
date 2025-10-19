@@ -1,16 +1,24 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { UserNotification } from '../../notification/entities/user-notification.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import { ApiKey } from '../../api-key/api-key.entity';
 import { Exclude } from 'class-transformer';
-import { Availability } from 'src/availability/entities/availability.entity';
+import { Availability } from '../../availability/entities/availability.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
   MINISTER = 'minister',
-  PS='PS',
-  CEO='CEO',
-  DEPUTY_CEO='Deputy CEO',
+  PS = 'PS',
+  CEO = 'CEO',
+  DEPUTY_CEO = 'Deputy CEO',
   PRIME_MINISTER = 'Prime Minister',
-  MINISTER_OPM = 'Minister at OPM'
+  MINISTER_OPM = 'Minister at OPM',
 }
 
 export enum UserStatus {
@@ -76,4 +84,10 @@ export class User {
 
   @OneToMany(() => Availability, (availability) => availability.user)
   availabilities: Availability[];
+
+  @OneToMany(
+    () => UserNotification,
+    (userNotification) => userNotification.user,
+  )
+  userNotifications: UserNotification[];
 }

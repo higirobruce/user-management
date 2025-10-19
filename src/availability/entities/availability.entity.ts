@@ -1,4 +1,4 @@
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -25,8 +25,8 @@ export class Availability {
   })
   reason: AbsenceReason;
 
-   @Column({ type: 'text', nullable: true })
-  description: string
+  @Column({ type: 'text', nullable: true })
+  description: string;
 
   @Column()
   startDate: Date;

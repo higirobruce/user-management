@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Availability } from './entities/availability.entity';
@@ -24,10 +28,8 @@ export class AvailabilityService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    const { userId: dtoUserId, ...restOfDto } = createAvailabilityDto;
-
     const availability = this.availabilityRepository.create({
-      ...restOfDto,
+      ...createAvailabilityDto,
       user,
     });
     return this.availabilityRepository.save(availability);

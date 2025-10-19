@@ -8,7 +8,7 @@ import { UpdatePmsDto } from './dto/update-pms.dto';
 
 @Injectable()
 export class PmsService {
-constructor(
+  constructor(
     @InjectRepository(PmsEntity)
     private pmsRepository: Repository<PmsEntity>,
     private readonly integrationService: PmsIntegrationService,
@@ -44,8 +44,12 @@ constructor(
     return this.integrationService.fetchProjectsParallel(institutions);
   }
 
-  async getProjectsByIds(institutions: string[], ids: (string|number)[]): Promise<any[]> {
-    const allInstitutionResponses = await this.integrationService.fetchProjectsParallel(institutions);
+  async getProjectsByIds(
+    institutions: string[],
+    ids: (string | number)[],
+  ): Promise<any[]> {
+    const allInstitutionResponses =
+      await this.integrationService.fetchProjectsParallel(institutions);
 
     // each response: { data: [ { overview: { projectId, ... }, ... } ] }
     const matched: any[] = [];
@@ -54,7 +58,8 @@ constructor(
       if (!resp?.data || !Array.isArray(resp.data)) continue;
 
       const filtered = resp.data.filter((item: any) => {
-        const projectId = item?.overview?.projectId ?? item?.overview?.id ?? item?.id;
+        const projectId =
+          item?.overview?.projectId ?? item?.overview?.id ?? item?.id;
         return ids.includes(projectId);
       });
 

@@ -1,0 +1,121 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Notification } from './entities/notification.entity';
+import { UserNotification } from './entities/user-notification.entity';
+import { User } from '../users/entities/user.entity';
+
+@Injectable()
+export class NotificationService {
+  constructor(
+    @InjectRepository(Notification)
+    private readonly notificationRepository: Repository<Notification>,
+    @InjectRepository(UserNotification)
+    private readonly userNotificationRepository: Repository<UserNotification>,
+  ) {}
+
+  async createNotification(
+    title: string,
+    message: string,
+    users: User[],
+  ): Promise<Notification> {
+    const notification = this.notificationRepository.create({ 
+      title, 
+      message,
+      readBy: [] 
+    });
+    await this.notificationRepository.save(notification);
+
+    const userNotifications = users.map((user) => {
+      return this.userNotificationRepository.create({
+        user,
+        notification,
+        read: false,
+      });
+    });
+
+    await this.userNotificationRepository.save(userNotifications);
+
+    return notification;
+  }
+
+  async getNotificationsForUser(userId: string): Promise<UserNotification[]> {
+    return this.userNotificationRepository.find({
+      where: { user: { id: userId } },
+      relations: ['notification'],
+    });
+  }
+
+  async getUnreadNotificationsForUser(userId: string): Promise<UserNotification[]> {
+    const userNotifications = await this.userNotificationRepository.find({
+      where: { user: { id: userId } },
+      relations: ['notification', 'user'],
+      order: {
+        notification: { createdAt: 'DESC' }
+      }
+    });
+
+    // Filter out notifications where the userId is present in the notification's readBy array
+    return userNotifications.filter(userNotification => {
+      const notification = userNotification.notification;
+      // If readBy is null or undefined, it means no one has read it, so it's unread for this user.
+      // Otherwise, check if the userId is NOT included in the readBy array.
+      return !notification.readBy || !notification.readBy.includes(userId);
+    });
+  }
+
+  async markAsRead(userNotificationId: string): Promise<UserNotification> {
+    const userNotification = await this.userNotificationRepository.findOne({
+      where: { id: userNotificationId },
+      relations: ['notification', 'user'],
+    });
+
+    if (!userNotification) {
+      throw new NotFoundException(`User notification with ID ${userNotificationId} not found`);
+    }
+
+    // Update the individual user-notification record
+    userNotification.read = true;
+    await this.userNotificationRepository.save(userNotification);
+
+    // Update the notification's readBy array
+    const notification = userNotification.notification;
+    const userId = userNotification.user.id;
+
+    // Only add the userId if it's not already in the readBy array
+    if (!notification.readBy) {
+      notification.readBy = [];
+    }
+    
+    if (!notification.readBy.includes(userId)) {
+      notification.readBy.push(userId);
+      await this.notificationRepository.save(notification);
+    }
+
+    return userNotification;
+  }
+
+  async getReadByUsers(notificationId: string): Promise<string[]> {
+    const notification = await this.notificationRepository.findOne({
+      where: { id: notificationId },
+    });
+
+    if (!notification) {
+      throw new NotFoundException(`Notification with ID ${notificationId} not found`);
+    }
+
+    return notification.readBy || [];
+  }
+
+  async isReadByUser(notificationId: string, userId: string): Promise<boolean> {
+    const notification = await this.notificationRepository.findOne({
+      where: { id: notificationId },
+    });
+
+    if (!notification) {
+      throw new NotFoundException(`Notification with ID ${notificationId} not found`);
+    }
+
+    return notification.readBy?.includes(userId) || false;
+  }
+}

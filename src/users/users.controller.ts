@@ -11,7 +11,13 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiSecurity,
+} from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -28,7 +34,7 @@ import { UsersService } from './users.service';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class UsersController {
-  constructor(private readonly userService: UsersService) { }
+  constructor(private readonly userService: UsersService) {}
 
   @Post()
   // @UseGuards(RolesGuard)
@@ -38,13 +44,15 @@ export class UsersController {
   @ApiOperation({ summary: 'Create a new user (Admin only)' })
   @ApiResponse({ status: 201, description: 'User successfully created' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   async create(@Body() createUserDto: CreateUserDto) {
     const user = await this.userService.create(createUserDto);
-    const { password, ...result } = user;
     return {
       message: 'User created successfully',
-      user: result,
+      user: user,
     };
   }
 
@@ -54,7 +62,10 @@ export class UsersController {
   // @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Get all users (Admin only)' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   async findAll() {
     const users = await this.userService.findAll();
     return {
@@ -69,7 +80,6 @@ export class UsersController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
   async getProfile(@Param() id: string) {
-
     const profile = await this.userService.findOne(id);
     return {
       message: 'Profile retrieved successfully',
@@ -83,7 +93,10 @@ export class UsersController {
   @ApiOperation({ summary: 'Get user by ID (Admin only)' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   async findOne(@Param('id') id: string) {
     const user = await this.userService.findOne(id);
     return {
@@ -117,7 +130,10 @@ export class UsersController {
   @ApiOperation({ summary: 'Update user by ID (Admin only)' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     const user = await this.userService.update(id, updateUserDto);
     return {
@@ -132,12 +148,18 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Change current user password' })
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request - Invalid current password' })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - Invalid current password',
+  })
   async changePassword(
     // @CurrentUser() user: User,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
-    await this.userService.changePassword(changePasswordDto.email, changePasswordDto);
+    await this.userService.changePassword(
+      changePasswordDto.email,
+      changePasswordDto,
+    );
     return {
       message: 'Password changed successfully',
     };
@@ -152,7 +174,10 @@ export class UsersController {
   @ApiOperation({ summary: 'Deactivate user (Admin only)' })
   @ApiResponse({ status: 200, description: 'User deactivated successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   async deactivate(@Param('id') id: string) {
     const user = await this.userService.deactivate(id);
     return {
@@ -170,7 +195,10 @@ export class UsersController {
   @ApiOperation({ summary: 'Activate user (Admin only)' })
   @ApiResponse({ status: 200, description: 'User activated successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   async activate(@Param('id') id: string) {
     const user = await this.userService.activate(id);
     return {
@@ -188,7 +216,10 @@ export class UsersController {
   @ApiOperation({ summary: 'Delete user (Admin only)' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   async remove(@Param('id') id: string) {
     await this.userService.remove(id);
     return {

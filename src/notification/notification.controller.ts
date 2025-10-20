@@ -47,7 +47,7 @@ export class NotificationController {
 
   @Patch(':id/read')
   @UseGuards(JwtAuthGuard)
-  markAsRead(@Param('id') id: string) {
-    return this.notificationService.markAsRead(id);
+  markAsRead(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.notificationService.markAsRead(id, user.id);
   }
 }

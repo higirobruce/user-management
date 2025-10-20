@@ -12,17 +12,17 @@ export class NotificationService {
     private readonly notificationRepository: Repository<Notification>,
     @InjectRepository(UserNotification)
     private readonly userNotificationRepository: Repository<UserNotification>,
-  ) {}
+  ) { }
 
   async createNotification(
     title: string,
     message: string,
     users: User[],
   ): Promise<Notification> {
-    const notification = this.notificationRepository.create({ 
-      title, 
+    const notification = this.notificationRepository.create({
+      title,
       message,
-      readBy: [] 
+      readBy: []
     });
     await this.notificationRepository.save(notification);
 
@@ -49,7 +49,7 @@ export class NotificationService {
   async getUnreadNotificationsForUser(userId: string): Promise<UserNotification[]> {
     const userNotifications = await this.userNotificationRepository.find({
       where: { user: { id: userId } },
-      relations: ['notification', 'user'],
+      relations: ['notification'],
       order: {
         notification: { createdAt: 'DESC' }
       }
@@ -64,10 +64,10 @@ export class NotificationService {
     });
   }
 
-  async markAsRead(userNotificationId: string): Promise<UserNotification> {
-    const userNotification = await this.userNotificationRepository.findOne({
+  async markAsRead(userNotificationId: string, userId: string): Promise<Notification> {
+    const userNotification = await this.notificationRepository.findOne({
       where: { id: userNotificationId },
-      relations: ['notification', 'user'],
+      // relations: ['user'],
     });
 
     if (!userNotification) {
@@ -75,21 +75,21 @@ export class NotificationService {
     }
 
     // Update the individual user-notification record
-    userNotification.read = true;
+    // userNotification.read = true;
     await this.userNotificationRepository.save(userNotification);
 
     // Update the notification's readBy array
-    const notification = userNotification.notification;
-    const userId = userNotification.user.id;
+    // const notification = userNotification.notification;
+    // const userId = userNotification.user.id;
 
     // Only add the userId if it's not already in the readBy array
-    if (!notification.readBy) {
-      notification.readBy = [];
+    if (!userNotification.readBy) {
+      userNotification.readBy = [];
     }
-    
-    if (!notification.readBy.includes(userId)) {
-      notification.readBy.push(userId);
-      await this.notificationRepository.save(notification);
+
+    if (!userNotification.readBy.includes(userId)) {
+      userNotification.readBy.push(userId);
+      await this.notificationRepository.save(userNotification);
     }
 
     return userNotification;

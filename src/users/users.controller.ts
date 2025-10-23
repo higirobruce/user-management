@@ -38,8 +38,8 @@ export class UsersController {
 
   @Post()
   // @UseGuards(RolesGuard)
-  @UseGuards(ApiKeyGuard)
-  @ApiSecurity('api-key')
+  // @UseGuards(ApiKeyGuard)
+  // @ApiSecurity('api-key')
   // @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Create a new user (Admin only)' })
   @ApiResponse({ status: 201, description: 'User successfully created' })
@@ -75,8 +75,8 @@ export class UsersController {
   }
 
   @Get('profile/:id')
-  @UseGuards(ApiKeyGuard)
-  @ApiSecurity('api-key')
+  // @UseGuards(ApiKeyGuard)
+  // @ApiSecurity('api-key')
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
   async getProfile(@Param() id: string) {
@@ -88,8 +88,8 @@ export class UsersController {
   }
 
   @Get(':id')
-  @UseGuards(ApiKeyGuard)
-  @ApiSecurity('api-key')
+  // @UseGuards(ApiKeyGuard)
+  // @ApiSecurity('api-key')
   @ApiOperation({ summary: 'Get user by ID (Admin only)' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -107,6 +107,8 @@ export class UsersController {
 
   @Patch('profile')
   @UseGuards(ApiKeyGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiSecurity('api-key')
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ status: 200, description: 'Profile updated successfully' })
@@ -124,8 +126,10 @@ export class UsersController {
 
   @Patch(':id')
   @UseGuards(RolesGuard)
-  @UseGuards(ApiKeyGuard)
-  @ApiSecurity('api-key')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
+  // @UseGuards(ApiKeyGuard)
+  // @ApiSecurity('api-key')
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Update user by ID (Admin only)' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
@@ -144,6 +148,8 @@ export class UsersController {
 
   @Patch('profile/change-password')
   @UseGuards(ApiKeyGuard)
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiSecurity('api-key')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Change current user password' })
@@ -167,8 +173,9 @@ export class UsersController {
 
   @Patch(':id/deactivate')
   @UseGuards(RolesGuard)
-  @UseGuards(ApiKeyGuard)
-  @ApiSecurity('api-key')
+  @Roles(UserRole.ADMIN)
+  // @UseGuards(ApiKeyGuard)
+  // @ApiSecurity('api-key')
   @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Deactivate user (Admin only)' })
@@ -188,9 +195,9 @@ export class UsersController {
 
   @Patch(':id/activate')
   @UseGuards(RolesGuard)
-  @UseGuards(ApiKeyGuard)
-  @ApiSecurity('api-key')
   @Roles(UserRole.ADMIN)
+  // @UseGuards(ApiKeyGuard)
+  // @ApiSecurity('api-key')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Activate user (Admin only)' })
   @ApiResponse({ status: 200, description: 'User activated successfully' })
@@ -209,9 +216,9 @@ export class UsersController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @UseGuards(ApiKeyGuard)
-  @ApiSecurity('api-key')
   @Roles(UserRole.ADMIN)
+  // @UseGuards(ApiKeyGuard)
+  // @ApiSecurity('api-key')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete user (Admin only)' })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })

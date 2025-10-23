@@ -19,6 +19,7 @@ export enum UserRole {
   DEPUTY_CEO = 'Deputy CEO',
   PRIME_MINISTER = 'Prime Minister',
   MINISTER_OPM = 'Minister at OPM',
+  CDO='CDO',
 }
 
 export enum UserStatus {
@@ -46,6 +47,9 @@ export class User {
 
   @Column()
   ministry: string;
+
+  @Column({ nullable: true })
+  title: string;
 
   @Column({
     type: 'enum',

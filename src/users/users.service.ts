@@ -50,6 +50,7 @@ export class UsersService {
         'status',
         'createdAt',
         'updatedAt',
+        'title',
       ],
     });
   }
@@ -70,6 +71,7 @@ export class UsersService {
         'status',
         'createdAt',
         'updatedAt',
+        'title',
       ],
     });
 

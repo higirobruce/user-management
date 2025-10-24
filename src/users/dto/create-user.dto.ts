@@ -33,6 +33,10 @@ export class CreateUserDto {
   @IsString()
   ministry: string;
 
+  @ApiProperty()
+  @IsString()
+  title: string;
+
   @ApiProperty({ enum: UserRole, default: UserRole.MINISTER })
   @IsEnum(UserRole)
   role: UserRole = UserRole.MINISTER;

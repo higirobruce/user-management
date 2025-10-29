@@ -9,10 +9,11 @@ import {
 
 export enum EventCategory {
   CABINET_MEETING = 'Cabinet Meeting',
-  REGIONAL_SUMMIT = 'Regional Summit',
-  INTERNATIONAL_CONFERENCE = 'International Conference',
-  SOCIAL_EVENT = 'Social Event',
-  OFFICIAL_STATE_VISIT = 'Official State Visit',
+  COORDINATION_MEETING = 'Coordination Meeting',
+  REVIEW_AND_REPORTING_SESSION = 'Review and Reporting Session',
+  OFFICIAL_OPENING_OR_LAUNCH = 'Official Opening or Launch',
+  ANNIVERSARY_EVENT = 'Anniversary Event',
+  INTERNATIONAL_DELEGATIONS_AND_NEGOTIATIONS = 'International Delegations and Negotiations',
 }
 
 @Entity()

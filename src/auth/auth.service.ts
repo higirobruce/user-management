@@ -21,6 +21,7 @@ export interface TokenPayload {
   firstName: string;
   lastName: string;
   ministry: string;
+  title: string;
 }
 
 export interface AuthTokens {
@@ -157,6 +158,7 @@ export class AuthService {
       lastName: user.lastName,
       ministry: user.ministry,
       role: user.role,
+      title: user.title,
     };
 
     const [accessToken, refreshToken] = await Promise.all([

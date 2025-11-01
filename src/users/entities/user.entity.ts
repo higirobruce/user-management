@@ -18,7 +18,7 @@ export enum UserRole {
   CEO = 'CEO',
   DEPUTY_CEO = 'Deputy CEO',
   PRIME_MINISTER = 'Prime Minister',
-  MINISTER_OPM = 'Minister in OPM',
+  MINISTER_OPM = 'Minister at OPM',
   CDO='CDO',
 }
 

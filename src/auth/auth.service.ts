@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,6 +13,7 @@ import * as crypto from 'crypto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../users/entities/user.entity';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UsersService } from '../users/users.service';
 
 export interface TokenPayload {
   sub: string;
@@ -35,7 +37,8 @@ export class AuthService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private jwtService: JwtService,
-  ) {}
+    private usersService: UsersService,
+  ) { }
 
   async register(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.userRepository.findOne({
@@ -56,7 +59,7 @@ export class AuthService {
     return this.userRepository.save(user);
   }
 
-  async login(loginDto: LoginDto): Promise<AuthTokens> {
+  async login(loginDto: LoginDto): Promise<AuthTokens | { requiresTwoFactorAuth: boolean; userId: string }> {
     const user = await this.userRepository.findOne({
       where: { email: loginDto.email },
     });
@@ -65,14 +68,17 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.email) {
+      throw new InternalServerErrorException('User email not found');
+    }
+
     if (user.status === 'inactive') {
       throw new UnauthorizedException('Account is inactive');
     }
 
-    const tokens = await this.generateTokens(user);
-    await this.updateRefreshToken(user.id, tokens.refreshToken);
-
-    return tokens;
+    // Always send an OTP and indicate that 2FA is required
+    await this.usersService.sendTwoFactorCode(user);
+    return { requiresTwoFactorAuth: true, userId: user.id };
   }
 
   async refreshTokens(
@@ -149,7 +155,7 @@ export class AuthService {
     await this.userRepository.save(user);
   }
 
-  private async generateTokens(user: User): Promise<AuthTokens> {
+  async generateTokens(user: User): Promise<AuthTokens> {
     const payload: TokenPayload = {
       sub: user.id,
       email: user.email,
@@ -175,7 +181,7 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  private async updateRefreshToken(
+  async updateRefreshToken(
     userId: string,
     refreshToken: string,
   ): Promise<void> {
@@ -183,5 +189,12 @@ export class AuthService {
     await this.userRepository.update(userId, {
       refreshToken: hashedRefreshToken,
     });
+  }
+
+  async validateTwoFactorAuthentication(user: User, otp: string): Promise<boolean> {
+    const valid = this.usersService.verifyTwoFactorAuthentication(user, otp)
+
+    console.log(otp, valid, user.email)
+    return valid;
   }
 }

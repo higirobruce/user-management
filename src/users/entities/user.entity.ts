@@ -94,4 +94,10 @@ export class User {
     (userNotification) => userNotification.user,
   )
   userNotifications: UserNotification[];
+
+  @Column({ type: 'varchar', nullable: true })
+  twoFactorSecret: string;
+
+  @Column({ type: 'boolean', default: false, nullable:true })
+  isTwoFactorEnabled: boolean;
 }

@@ -1,23 +1,60 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import * as bcrypt from 'bcryptjs';
-import { User, UserStatus } from './entities/user.entity';
+import { authenticator } from 'otplib';
+import { JwtService } from '@nestjs/jwt';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
+import { User, UserStatus } from './entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { EmailNotificationService } from 'src/email-notification/email-notification.service';
 import { isUUID } from 'class-validator';
+
+authenticator.options = { step: 120, window: 2 };
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
+    private readonly emailNotificationService: EmailNotificationService,
   ) {}
+
+  async generateTwoFactorSecret(user: User) {
+    const secret = authenticator.generateSecret();
+    await this.userRepository.update(user.id, { twoFactorSecret: secret });
+    return secret;
+  }
+
+  async enableTwoFactorAuthentication(user: User) {
+    await this.userRepository.update(user.id, {
+      twoFactorSecret: user.email,
+      isTwoFactorEnabled: true,
+    });
+  }
+
+  async sendTwoFactorCode(user: User): Promise<void> {
+    const otp = authenticator.generate(user.email);
+    console.log(`Generated OTP for ${user.email}: ${otp}`);
+    const htmlContent = `
+      <h1>Your 2FA Code</h1>
+      <p>Your two-factor authentication code is: <strong>${otp}</strong></p>
+      <p>This code is valid for only 10 minutes. Do not share it with anyone.</p>
+    `;
+    await this.emailNotificationService.sendGenericEmail(
+      user.email,
+      'Your 2FA Code',
+      htmlContent,
+      []
+    );
+  }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.userRepository.findOne({
@@ -72,6 +109,10 @@ export class UsersService {
         'createdAt',
         'updatedAt',
         'title',
+        'password',
+        'isTwoFactorEnabled',
+        'twoFactorSecret',
+        'refreshToken',
       ],
     });
 
@@ -115,11 +156,40 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
+  async requestPasswordChange(email: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Generate a JWT token with only the user's ID
+    const payload = { sub: user.id };
+    const token = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET || 'your-secret-key',
+      expiresIn: '1h', // Token expires in 1 hour
+    });
+
+    // Send the token to the user's email
+    await this.emailNotificationService.sendGenericEmail(
+      user.email,
+      'Password Change Request and Token',
+      `
+        <p>You have requested a password change.</p>
+        <p>Here is your password reset token (valid for 1 hour):</p>
+        <p><strong>${token}</strong></p>
+        <p>Please use this token to change your password.</p>
+        <p>If you did not request this change, please contact support immediately.</p>
+      `,
+      []
+    );
+  }
+
   async changePassword(
-    email: string,
+    userId: string,
     changePasswordDto: ChangePasswordDto,
   ): Promise<void> {
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -161,5 +231,13 @@ export class UsersService {
     const user = await this.findOne(id);
     user.status = UserStatus.ACTIVE;
     return this.userRepository.save(user);
+  }
+
+  async verifyTwoFactorAuthentication(user: User, otp: string): Promise<boolean> {
+    console.log(`Verifying OTP for ${user.email}. Received OTP: ${otp}. Secret: ${user.email}`);
+    return authenticator.verify({
+      token: otp,
+      secret: user.email,
+    });
   }
 }

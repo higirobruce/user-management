@@ -9,8 +9,7 @@ import {
   Delete,
   UseGuards,
   HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+  HttpStatus } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -21,6 +20,8 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { RequestPasswordChangeDto } from './dto/request-password-change.dto';
+import { EnableTwoFactorDto } from './dto/enable-two-factor.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { ApiKeyGuard } from '../api-key/guards/api-key.guard';
@@ -31,12 +32,13 @@ import { UsersService } from './users.service';
 
 @ApiTags('Users')
 @Controller('users')
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
 export class UsersController {
-  constructor(private readonly userService: UsersService) {}
+  constructor(private readonly userService: UsersService) { }
+
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   // @UseGuards(RolesGuard)
   // @UseGuards(ApiKeyGuard)
   // @ApiSecurity('api-key')
@@ -57,6 +59,8 @@ export class UsersController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   // @UseGuards(ApiKeyGuard)
   @UseGuards(RolesGuard)
   // @Roles(UserRole.ADMIN)
@@ -75,6 +79,8 @@ export class UsersController {
   }
 
   @Get('profile/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   // @UseGuards(ApiKeyGuard)
   // @ApiSecurity('api-key')
   @ApiOperation({ summary: 'Get current user profile' })
@@ -88,6 +94,8 @@ export class UsersController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   // @UseGuards(ApiKeyGuard)
   // @ApiSecurity('api-key')
   @ApiOperation({ summary: 'Get user by ID (Admin only)' })
@@ -106,10 +114,11 @@ export class UsersController {
   }
 
   @Patch('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @UseGuards(ApiKeyGuard)
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  @ApiSecurity('api-key')
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ status: 200, description: 'Profile updated successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -125,12 +134,8 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @UseGuards(RolesGuard)
-  // @UseGuards(ApiKeyGuard)
-  // @ApiSecurity('api-key')
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update user by ID (Admin only)' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -146,32 +151,39 @@ export class UsersController {
     };
   }
 
+  @Post('request-password-change')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request password change email' })
+  @ApiResponse({ status: 200, description: 'Password change email sent' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async requestPasswordChange(@Body() requestPasswordChangeDto: RequestPasswordChangeDto) {
+    await this.userService.requestPasswordChange(requestPasswordChangeDto.email);
+    return {
+      message: 'Password change request email sent successfully',
+    };
+  }
+
   @Patch('profile/change-password')
-  @UseGuards(ApiKeyGuard)
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiSecurity('api-key')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Change current user password' })
   @ApiResponse({ status: 200, description: 'Password changed successfully' })
   @ApiResponse({
     status: 400,
-    description: 'Bad request - Invalid current password',
+    description: 'Bad request - Invalid current password or token',
   })
   async changePassword(
-    // @CurrentUser() user: User,
+    @CurrentUser() user: User,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
-    await this.userService.changePassword(
-      changePasswordDto.email,
-      changePasswordDto,
-    );
-    return {
-      message: 'Password changed successfully',
-    };
+    await this.userService.changePassword(user.id, changePasswordDto);
+    return { message: 'Password changed successfully' };
   }
 
   @Patch(':id/deactivate')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   // @UseGuards(ApiKeyGuard)
@@ -194,6 +206,8 @@ export class UsersController {
   }
 
   @Patch(':id/activate')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   // @UseGuards(ApiKeyGuard)
@@ -215,6 +229,8 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   // @UseGuards(ApiKeyGuard)
@@ -232,5 +248,19 @@ export class UsersController {
     return {
       message: 'User deleted successfully',
     };
+  }
+
+  @Post('2fa/enable')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Enable two-factor authentication' })
+  @ApiResponse({ status: 200, description: 'Two-factor authentication enabled' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  async enableTwoFactorAuthentication(
+    @CurrentUser() user: User,
+  ) {
+    await this.userService.enableTwoFactorAuthentication(
+      user,
+    );
+    return { message: 'Two-factor authentication enabled successfully' };
   }
 }

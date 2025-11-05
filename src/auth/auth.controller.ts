@@ -6,6 +6,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -15,16 +16,18 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { VerifyTwoFactorDto } from './dto/verify-two-factor.dto';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { ForgotPasswordDto } from '../users/dto/forgot-password.dto';
 import { ResetPasswordDto } from '../users/dto/reset-password.dto';
+import { UsersService } from 'src/users/users.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService, private readonly userService: UsersService) { }
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
@@ -40,15 +43,38 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login user' })
-  @ApiResponse({ status: 200, description: 'User successfully logged in' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  @ApiOperation({ summary: 'User login' })
+  @ApiResponse({ status: 200, description: 'User logged in successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async login(@Body() loginDto: LoginDto) {
-    const tokens = await this.authService.login(loginDto);
-    return {
-      message: 'Login successful',
-      ...tokens,
-    };
+    const result = await this.authService.login(loginDto);
+    if ('requiresTwoFactorAuth' in result && result.requiresTwoFactorAuth) {
+      return { message: 'Two-factor authentication required', userId: result.userId };
+    }
+    return result;
+  }
+
+  @Post('2fa/verify')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify two-factor authentication code' })
+  @ApiResponse({ status: 200, description: '2FA code verified successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid 2FA code' })
+  async verifyTwoFactorAuthentication(@Body() verifyTwoFactorDto: VerifyTwoFactorDto) {
+
+    const user = await this.userService.findOne(verifyTwoFactorDto.userId);
+    if (!user) {
+      throw new UnauthorizedException('Invalid user');
+    }
+    const isCodeValid = await this.authService.validateTwoFactorAuthentication(
+      user,
+      verifyTwoFactorDto.otp,
+    );
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Invalid two-factor authentication code');
+    }
+    const tokens = await this.authService.generateTokens(user);
+    await this.authService.updateRefreshToken(user.id, tokens.refreshToken);
+    return tokens;
   }
 
   @Post('refresh')

@@ -48,6 +48,16 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async login(@Body() loginDto: LoginDto) {
     const result = await this.authService.login(loginDto);
+    return result;
+  }
+
+  @Post('login/mfa')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'User login with MFA' })
+  @ApiResponse({ status: 200, description: 'User logged in successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async loginMFA(@Body() loginDto: LoginDto) {
+    const result = await this.authService.loginMFA(loginDto);
     if ('requiresTwoFactorAuth' in result && result.requiresTwoFactorAuth) {
       return { message: 'Two-factor authentication required', userId: result.userId };
     }

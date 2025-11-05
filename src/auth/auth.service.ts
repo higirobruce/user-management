@@ -59,7 +59,7 @@ export class AuthService {
     return this.userRepository.save(user);
   }
 
-  async login(loginDto: LoginDto): Promise<AuthTokens | { requiresTwoFactorAuth: boolean; userId: string }> {
+  async loginMFA(loginDto: LoginDto): Promise<AuthTokens | { requiresTwoFactorAuth: boolean; userId: string }> {
     const user = await this.userRepository.findOne({
       where: { email: loginDto.email },
     });
@@ -79,6 +79,25 @@ export class AuthService {
     // Always send an OTP and indicate that 2FA is required
     await this.usersService.sendTwoFactorCode(user);
     return { requiresTwoFactorAuth: true, userId: user.id };
+  }
+
+  async login(loginDto: LoginDto): Promise<AuthTokens> {
+    const user = await this.userRepository.findOne({
+      where: { email: loginDto.email },
+    });
+
+    if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (user.status === 'inactive') {
+      throw new UnauthorizedException('Account is inactive');
+    }
+
+    const tokens = await this.generateTokens(user);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return tokens;
   }
 
   async refreshTokens(

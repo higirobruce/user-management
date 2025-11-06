@@ -4,10 +4,16 @@ import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 
 interface TokenResponse {
-  access_token: string;
-  expires_in: number;
-  token_type: string;
-  scope?: string;
+  status: string,
+  message: string,
+  data: {
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+    refresh_expires_in: number;
+    token_type: string;
+    scope?: string;
+  }
 }
 
 @Injectable()
@@ -15,7 +21,7 @@ export class PmsIntegrationService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   private async getAccessToken(): Promise<string> {
     const url = this.configService.get<string>('AUTH_URL');
@@ -25,23 +31,31 @@ export class PmsIntegrationService {
       'AUTH_GRANT_TYPE',
       'client_credentials',
     );
-    const formData = new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: grantType,
-    });
+    const username = this.configService.get<string>('AUTH_USERNAME');
+    const password = this.configService.get<string>('AUTH_PASSWORD');
+    const totp = this.configService.get<string>('AUTH_TOTP');
+
+    const requestBody = {
+      username,
+      password,
+      totp,
+    };
 
     try {
       const response$ = this.httpService.post<TokenResponse>(
         url,
-        formData.toString(),
+        requestBody,
         {
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-REALM': this.configService.get<string>('X_REALM'),
+          },
         },
       );
       const { data } = await firstValueFrom(response$);
-      return data.access_token;
+      return data.data.access_token;
     } catch (error) {
+      // console.log(error)
       throw new HttpException(
         'Failed to retrieve access token',
         error.response?.status || 500,
@@ -55,7 +69,7 @@ export class PmsIntegrationService {
   async fetchProjects(institutionName: string): Promise<any> {
     const token = await this.getAccessToken();
     const projectsUrl = this.configService.get<string>('PROJECTS_API_URL');
-    const realmHeader = this.configService.get<string>('PROJECTS_API_X_REALM');
+    const realmHeader = this.configService.get<string>('X_REALM');
 
     try {
       const response$ = this.httpService.get(
@@ -70,6 +84,7 @@ export class PmsIntegrationService {
       const { data } = await firstValueFrom(response$);
       return data;
     } catch (error) {
+      console.log(error.response)
       throw new HttpException(
         'Failed to fetch projects',
         error.response?.status || 500,

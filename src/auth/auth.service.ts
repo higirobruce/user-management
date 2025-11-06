@@ -14,6 +14,8 @@ import { LoginDto } from './dto/login.dto';
 import { User } from '../users/entities/user.entity';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
+import { ConfigService } from '@nestjs/config';
+import { EmailNotificationService } from '../email-notification/email-notification.service';
 
 export interface TokenPayload {
   sub: string;
@@ -38,6 +40,8 @@ export class AuthService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
     private usersService: UsersService,
+    private configService: ConfigService,
+    private emailNotificationService: EmailNotificationService,
   ) { }
 
   async register(createUserDto: CreateUserDto): Promise<User> {
@@ -135,40 +139,52 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const hashedToken = crypto
-      .createHash('sha256')
-      .update(resetToken)
-      .digest('hex');
+    const token = await this.jwtService.signAsync(
+      { id: user.id },
+      {
+        secret: this.configService.get<string>('JWT_SECRET'),
+        expiresIn: '1h',
+      },
+    );
 
-    user.passwordResetToken = hashedToken;
-    user.passwordResetExpires = new Date(Date.now() + 8 * 60 * 60 * 1000); // 8 hours
+    const forgotPasswordUrl = `${this.configService.get<string>('FORGOT_PASSWORD_URL')}?token=${token}`;
 
-    await this.userRepository.save(user);
+    const htmlContent = `
+      <h1>Password Reset Request</h1>
+      <p>You have requested to reset your password. Please click on the link below to reset your password:</p>
+      <p><a href="${forgotPasswordUrl}">Reset Password</a></p>
+      <p>This link is valid for 1 hour.</p>
+      <p>If you did not request a password reset, please ignore this email.</p>
+    `;
 
-    // Here you would send an email with the resetToken
-    // For now, we'll just log it (remove in production)
-    console.log(`Password reset token for ${email}: ${resetToken}`);
+    await this.emailNotificationService.sendGenericEmail(
+      user.email,
+      'Password Reset Request',
+      htmlContent,
+      [],
+    );
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    let userId: string;
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+      userId = payload.id;
+    } catch (error) {
+      throw new BadRequestException('Invalid or expired token');
+    }
 
-    const user = await this.userRepository.findOne({
-      where: {
-        passwordResetToken: hashedToken,
-      },
-    });
+    const user = await this.userRepository.findOne({ where: { id: userId } });
 
-    if (!user || user.passwordResetExpires < new Date()) {
-      throw new BadRequestException('Token is invalid or has expired');
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 12);
 
     user.password = hashedPassword;
-    user.passwordResetToken = null;
-    user.passwordResetExpires = null;
     user.refreshToken = null; // Invalidate all sessions
 
     await this.userRepository.save(user);

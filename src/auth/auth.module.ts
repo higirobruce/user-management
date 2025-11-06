@@ -8,6 +8,8 @@ import { User } from 'src/users/entities/user.entity';
 import { UserModule } from 'src/users/users.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { EmailNotificationModule } from 'src/email-notification/email-notification.module';
+import { EmailNotificationService } from 'src/email-notification/email-notification.service';
 
 @Module({
   imports: [
@@ -20,7 +22,7 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
     UserModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy, EmailNotificationService],
   exports: [AuthService],
 })
 export class AuthModule {}

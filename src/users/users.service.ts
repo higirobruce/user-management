@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { authenticator } from 'otplib';
 import { JwtService } from '@nestjs/jwt';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -16,6 +17,7 @@ import {
 } from '@nestjs/common';
 import { EmailNotificationService } from 'src/email-notification/email-notification.service';
 import { isUUID } from 'class-validator';
+import { ConfigService } from '@nestjs/config';
 
 authenticator.options = { step: 120, window: 2 };
 
@@ -25,6 +27,7 @@ export class UsersService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly emailNotificationService: EmailNotificationService,
+    private readonly configService: ConfigService,
   ) {}
 
   async generateTwoFactorSecret(user: User) {
@@ -158,32 +161,47 @@ export class UsersService {
 
   async requestPasswordChange(email: string): Promise<void> {
     const user = await this.userRepository.findOne({ where: { email } });
-
     if (!user) {
-      throw new NotFoundException('User not found');
+      return;
     }
 
-    // Generate a JWT token with only the user's ID
-    const payload = { sub: user.id };
-    const token = await this.jwtService.signAsync(payload, {
-      secret: process.env.JWT_SECRET || 'your-secret-key',
-      expiresIn: '1h', // Token expires in 1 hour
-    });
+    const resetToken = uuidv4();
+    const resetTokenExpires = new Date(Date.now() + 3600000); // 1 hour from now
 
-    // Send the token to the user's email
-    await this.emailNotificationService.sendGenericEmail(
-      user.email,
-      'Password Change Request and Token',
+    user.passwordResetToken = resetToken;
+    user.passwordResetExpires = resetTokenExpires;
+    await this.userRepository.save(user);
+    const forgotPasswordUrl = `${this.configService.get('FORGOT_PASSWORD_URL')}?token=${resetToken}`;
+
+    this.emailNotificationService.sendGenericEmail(
+      email,
+      'Password Change Request',
       `
         <p>You have requested a password change.</p>
-        <p>Here is your password reset token (valid for 1 hour):</p>
-        <p><strong>${token}</strong></p>
-        <p>Please use this token to change your password.</p>
+        <p>Please click the link below to reset your password:</p>
+        <p><a href="${forgotPasswordUrl}">${forgotPasswordUrl}</a></p>
         <p>If you did not request this change, please contact support immediately.</p>
       `,
       []
     );
   }
+
+  async resetPassword(token: string, password: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { passwordResetToken: token } });
+
+    if (!user || user.passwordResetExpires < new Date()) {
+      throw new Error('Invalid or expired password reset token');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+    user.password = hashedPassword;
+    user.passwordResetToken = null;
+    user.passwordResetExpires = null;
+    user.refreshToken = null; // Invalidate all sessions
+    await this.userRepository.save(user);
+  }
+
+    
 
   async changePassword(
     userId: string,

@@ -124,7 +124,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Password reset email sent' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    await this.authService.forgotPassword(forgotPasswordDto.email);
+    await this.userService.requestPasswordChange(forgotPasswordDto.email);
     return {
       message: 'Password reset email sent successfully',
     };

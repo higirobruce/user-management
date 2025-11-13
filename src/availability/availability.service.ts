@@ -60,7 +60,7 @@ export class AvailabilityService {
     }
 
     if (
-      currentUser.role !== UserRole.ADMIN &&
+     ( currentUser.role !== UserRole.ADMIN && currentUser.role !== UserRole.OVERSIGHT) &&
       availability.user.id !== currentUser.id
     ) {
       throw new ForbiddenException(
@@ -89,7 +89,7 @@ export class AvailabilityService {
     }
 
     if (
-      currentUser.role !== UserRole.ADMIN &&
+     ( currentUser.role !== UserRole.ADMIN && currentUser.role !== UserRole.OVERSIGHT)&&
       availability.user.id !== currentUser.id
     ) {
       throw new ForbiddenException(

@@ -11,6 +11,10 @@ export class CreateAvailabilityDto {
   @ApiProperty()
   description: string;
 
+  @IsOptional()
+  @ApiProperty()
+  destination: string;
+
   @ApiProperty()
   @IsDateString()
   startDate: string;

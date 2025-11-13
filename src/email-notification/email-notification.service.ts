@@ -8,15 +8,21 @@ export class EmailNotificationService {
 
   constructor(private mailerService: MailerService) {
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
+      host:  process.env.SMTP_HOST1,
       port: Number(process.env.SMTP_PORT),
       secure: process.env.SMTP_SECURE === 'true', // true for 465, false for 587
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
       },
+      pool: true,             // <— Keep connections open
+      maxConnections: 3,      // <— Adjust for your traffic
+      maxMessages: 100,       // <— Reuse connection multiple times
+      rateLimit: 5,            // <— Optional, to prevent server overload
       from: process.env.SMTP_USER,
       requireTLS: process.env.SMTP_REQUIRE_TLS === 'true',
+      logger: true,   // log to console
+      debug: true     // show SMTP conversation
     });
   }
 
@@ -79,7 +85,10 @@ export class EmailNotificationService {
       }));
     }
 
-    this.transporter.sendMail(mailOptions);
+    console.time('email');
+    this.transporter.sendMail(mailOptions).then(() => {
+      console.timeEnd('email');
+    }).catch(console.error);
 
     return {
       message: 'Your message is being processed',

@@ -81,6 +81,7 @@ export class AuthService {
     }
 
     // Always send an OTP and indicate that 2FA is required
+    
     await this.usersService.sendTwoFactorCode(user);
     return { requiresTwoFactorAuth: true, userId: user.id };
   }

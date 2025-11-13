@@ -28,6 +28,9 @@ export class Availability {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @Column({ type: 'text', nullable: true })
+  destination: string;
+
   @Column()
   startDate: Date;
 
@@ -39,6 +42,7 @@ export class Availability {
 
   @UpdateDateColumn()
   updatedAt: Date;
+  
 
   @ManyToOne(() => User, (user) => user.availabilities)
   user: User;

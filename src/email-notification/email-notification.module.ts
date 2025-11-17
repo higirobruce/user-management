@@ -11,7 +11,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => {
         const transportConfig = {
-          host: config.get<string>('SMTP_HOST1'),
+          host: config.get<string>('SMTP_HOST'),
           port: Number(config.get<string>('SMTP_PORT')),
           secure: config.get<string>('SMTP_SECURE') === 'true', // parse manually
           auth: {

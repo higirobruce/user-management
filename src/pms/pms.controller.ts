@@ -4,7 +4,6 @@ import { PmsService } from './pms.service';
 @Controller('pms')
 export class PmsController {
   constructor(private readonly pmsService: PmsService) {}
-
   @Get('projects/:institution')
   getProjects(@Param('institution') institution: string) {
     return this.pmsService.getRemoteProjects(institution);

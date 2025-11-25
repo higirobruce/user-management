@@ -47,6 +47,7 @@ export class EmailNotificationService {
     actionDescription: string,
     commenterName: string,
     commentContent: string,
+    cc: string
   ) {
     await this.transporter.sendMail({
       to: to,
@@ -58,6 +59,7 @@ export class EmailNotificationService {
         commenterName: commenterName,
         commentContent: commentContent,
       },
+      cc
     });
   }
 
@@ -66,12 +68,14 @@ export class EmailNotificationService {
     subject: string,
     body: string,
     files: Express.Multer.File[],
+    cc:string
   ) {
     const mailOptions: any = {
       from: process.env.SMTP_USER,
       to,
       subject,
       html: body,
+      cc
     };
 
     console.log(process.env.SMTP_USER);

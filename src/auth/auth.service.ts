@@ -163,6 +163,7 @@ export class AuthService {
       'Password Reset Request',
       htmlContent,
       [],
+      ''
     );
   }
 

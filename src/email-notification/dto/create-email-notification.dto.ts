@@ -16,4 +16,9 @@ export class CreateEmailNotificationDto {
   @IsString()
   @IsNotEmpty()
   body: string;
+
+  @ApiProperty()
+  @IsString()
+  cc: string;
+
 }

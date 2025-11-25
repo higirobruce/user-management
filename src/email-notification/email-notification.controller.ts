@@ -44,6 +44,7 @@ export class EmailNotificationController {
       body.subject,
       body.body,
       files,
+      body.cc
     );
   }
 }

@@ -55,7 +55,8 @@ export class UsersService {
       user.email,
       'Your 2FA Code',
       htmlContent,
-      []
+      [],
+      ''
     );
   }
 
@@ -182,7 +183,8 @@ export class UsersService {
         <p><a href="${forgotPasswordUrl}">${forgotPasswordUrl}</a></p>
         <p>If you did not request this change, please contact support immediately.</p>
       `,
-      []
+      [],
+      ''
     );
   }
 

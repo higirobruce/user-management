@@ -29,6 +29,8 @@ export class PmsIntegrationService {
     const password = this.configService.get<string>('AUTH_PASSWORD');
     const totp = this.configService.get<string>('AUTH_TOTP');
 
+    console.log(this.configService.get<string>('X_REALM'))
+
     const requestBody = {
       username,
       password,

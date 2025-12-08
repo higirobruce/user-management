@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { PmsEntity } from './entities/pms.entity';
 import { CreatePmsDto } from './dto/create-pms.dto';
 import { UpdatePmsDto } from './dto/update-pms.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PmsService {
@@ -12,7 +13,8 @@ export class PmsService {
     @InjectRepository(PmsEntity)
     private pmsRepository: Repository<PmsEntity>,
     private readonly integrationService: PmsIntegrationService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) { }
 
   findAll(): Promise<PmsEntity[]> {
     return this.pmsRepository.find();
@@ -69,5 +71,17 @@ export class PmsService {
     }
 
     return matched;
+  }
+
+  async getProjectsByProgramId(programId: string, institutionName: string): Promise<any> {
+    return this.integrationService.fetchProjectsByProgramId(programId, institutionName);
+  }
+
+  async getAllMegaProjects(): Promise<any> {
+    return this.integrationService.fetchAllMegaProjects();
+  }
+
+  async getAllPrograms(): Promise<any> {
+    return this.integrationService.fetchAllPrograms();
   }
 }

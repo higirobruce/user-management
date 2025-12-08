@@ -3,10 +3,28 @@ import { PmsService } from './pms.service';
 
 @Controller('pms')
 export class PmsController {
-  constructor(private readonly pmsService: PmsService) {}
+  constructor(private readonly pmsService: PmsService) { }
+
+
+  @Get('projects/allMegaProjects')
+  getAllMegaProjects() {
+    return this.pmsService.getAllMegaProjects();
+  }
+
+  @Get('projects/allPrograms')
+  getAllPrograms() {
+    return this.pmsService.getAllPrograms();
+  }
+
   @Get('projects/:institution')
   getProjects(@Param('institution') institution: string) {
     return this.pmsService.getRemoteProjects(institution);
+  }
+
+  @Post('projects/byProgramId')
+  getProjectsByProgramId(@Body() body: { programId: string; institutionName: string }) {
+    const { programId, institutionName } = body;
+    return this.pmsService.getProjectsByProgramId(programId, institutionName);
   }
 
   @Post('projects/batch')

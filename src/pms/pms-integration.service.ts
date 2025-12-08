@@ -50,7 +50,7 @@ export class PmsIntegrationService {
       console.log(data)
       return data.data.access_token;
     } catch (error) {
-      // console.log(error)
+      console.log(error)
       throw new HttpException(
         'Failed to retrieve access token',
         error.response?.status || 500,

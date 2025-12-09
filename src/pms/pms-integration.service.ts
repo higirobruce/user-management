@@ -29,13 +29,15 @@ export class PmsIntegrationService {
     const password = this.configService.get<string>('AUTH_PASSWORD');
     const totp = this.configService.get<string>('AUTH_TOTP');
 
-    console.log(this.configService.get<string>('X_REALM'))
+    console.log('X-REALM: ',this.configService.get<string>('X_REALM'))
 
     const requestBody = {
       username,
       password,
       totp,
     };
+
+    console.log('Request Body',requestBody)
 
     try {
       const response$ = this.httpService.post<TokenResponse>(

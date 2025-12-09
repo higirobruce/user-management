@@ -9,6 +9,10 @@ export class CreateNotificationDto {
   @IsNotEmpty()
   message: string;
 
+  @IsString()
+  @IsNotEmpty()
+  link: string;
+
   @IsArray()
   @IsString({ each: true })
   @IsNotEmpty()

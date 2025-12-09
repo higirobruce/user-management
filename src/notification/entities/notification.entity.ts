@@ -16,6 +16,9 @@ export class Notification {
   @Column()
   title: string;
 
+  @Column({nullable:true})
+  link: string;
+
   @Column()
   message: string;
 

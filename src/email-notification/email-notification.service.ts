@@ -4,12 +4,11 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailNotificationService {
-  private transporter: nodemailer.Transporter;
-
+  private transporter;
 
   constructor(private mailerService: MailerService) {
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
+      host:  process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
       secure: process.env.SMTP_SECURE === 'true', // true for 465, false for 587
       auth: {
@@ -25,26 +24,21 @@ export class EmailNotificationService {
       logger: true,   // log to console
       debug: true     // show SMTP conversation
     });
-
-    this.mailerService.addTransporter('default', this.transporter);
-
   }
 
   async sendUserWelcome(to: string, name: string) {
-    await this.mailerService.sendMail(
-      {
-        to: to,
-        subject: 'Welcome to Our Application!',
-        // template: 'welcome',
-        html: `
+    await this.transporter.sendMail({
+      to: to,
+      subject: 'Welcome to Our Application!',
+      // template: 'welcome',
+      html: `
         <p>Hello ${name},</p>
         <p>Welcome to our application! We are glad to have you on board.</p>
       `,
-        context: {
-          name: name,
-        },
-      }
-    )
+      context: {
+        name: name,
+      },
+    });
   }
 
   async sendCommentNotification(
@@ -55,7 +49,7 @@ export class EmailNotificationService {
     commentContent: string,
     cc: string
   ) {
-    this.mailerService.sendMail({
+    await this.transporter.sendMail({
       to: to,
       subject: 'New Comment on Your Post',
       template: 'comment',
@@ -65,8 +59,8 @@ export class EmailNotificationService {
         commenterName: commenterName,
         commentContent: commentContent,
       },
-      bcc: cc
-    })
+      bcc: cc,
+    });
   }
 
   async sendGenericEmail(
@@ -74,7 +68,7 @@ export class EmailNotificationService {
     subject: string,
     body: string,
     files: Express.Multer.File[],
-    cc: string
+    cc:string
   ) {
     const mailOptions: any = {
       from: process.env.SMTP_USER,
@@ -84,6 +78,9 @@ export class EmailNotificationService {
       bcc: cc,
     };
 
+    console.log(process.env.SMTP_USER);
+    console.log(process.env.SMTP_FROM_EMAIL);
+
     if (files && files.length > 0) {
       mailOptions.attachments = files.map((file) => ({
         filename: file.originalname,
@@ -92,7 +89,7 @@ export class EmailNotificationService {
       }));
     }
 
-    this.mailerService.sendMail(mailOptions) .then(() => {
+    this.transporter.sendMail(mailOptions).then(() => {
       console.timeEnd('email');
     }).catch(console.error);
 

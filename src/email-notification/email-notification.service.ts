@@ -31,18 +31,20 @@ export class EmailNotificationService {
   }
 
   async sendUserWelcome(to: string, name: string) {
-    await this.transporter.sendMail({
-      to: to,
-      subject: 'Welcome to Our Application!',
-      // template: 'welcome',
-      html: `
+    await this.mailerService.sendMail(
+      {
+        to: to,
+        subject: 'Welcome to Our Application!',
+        // template: 'welcome',
+        html: `
         <p>Hello ${name},</p>
         <p>Welcome to our application! We are glad to have you on board.</p>
       `,
-      context: {
-        name: name,
-      },
-    });
+        context: {
+          name: name,
+        },
+      }
+    )
   }
 
   async sendCommentNotification(
@@ -65,11 +67,6 @@ export class EmailNotificationService {
       },
       bcc: cc
     })
-
-    // await this.transporter.sendMail({
-
-
-    // });
   }
 
   async sendGenericEmail(
@@ -87,9 +84,6 @@ export class EmailNotificationService {
       bcc: cc,
     };
 
-    console.log(process.env.SMTP_USER);
-    console.log(process.env.SMTP_FROM_EMAIL);
-
     if (files && files.length > 0) {
       mailOptions.attachments = files.map((file) => ({
         filename: file.originalname,
@@ -98,7 +92,7 @@ export class EmailNotificationService {
       }));
     }
 
-    this.transporter.sendMail(mailOptions).then(() => {
+    this.mailerService.sendMail(mailOptions) .then(() => {
       console.timeEnd('email');
     }).catch(console.error);
 

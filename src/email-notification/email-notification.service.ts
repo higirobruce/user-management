@@ -4,11 +4,12 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailNotificationService {
-  private transporter;
+  private transporter: nodemailer.Transporter;
+
 
   constructor(private mailerService: MailerService) {
     this.transporter = nodemailer.createTransport({
-      host:  process.env.SMTP_HOST,
+      host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
       secure: process.env.SMTP_SECURE === 'true', // true for 465, false for 587
       auth: {
@@ -24,6 +25,9 @@ export class EmailNotificationService {
       logger: true,   // log to console
       debug: true     // show SMTP conversation
     });
+
+    this.mailerService.addTransporter('default', this.transporter);
+
   }
 
   async sendUserWelcome(to: string, name: string) {
@@ -49,7 +53,7 @@ export class EmailNotificationService {
     commentContent: string,
     cc: string
   ) {
-    await this.transporter.sendMail({
+    this.mailerService.sendMail({
       to: to,
       subject: 'New Comment on Your Post',
       template: 'comment',
@@ -59,8 +63,13 @@ export class EmailNotificationService {
         commenterName: commenterName,
         commentContent: commentContent,
       },
-      cc
-    });
+      bcc: cc
+    })
+
+    // await this.transporter.sendMail({
+
+
+    // });
   }
 
   async sendGenericEmail(
@@ -68,14 +77,14 @@ export class EmailNotificationService {
     subject: string,
     body: string,
     files: Express.Multer.File[],
-    cc:string
+    cc: string
   ) {
     const mailOptions: any = {
       from: process.env.SMTP_USER,
       to,
       subject,
       html: body,
-      cc
+      bcc: cc,
     };
 
     console.log(process.env.SMTP_USER);
@@ -89,7 +98,6 @@ export class EmailNotificationService {
       }));
     }
 
-    console.time('email');
     this.transporter.sendMail(mailOptions).then(() => {
       console.timeEnd('email');
     }).catch(console.error);

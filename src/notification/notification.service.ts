@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification } from './entities/notification.entity';
 import { UserNotification } from './entities/user-notification.entity';
-import { User } from '../users/entities/user.entity';
+import { User, UserStatus } from '../users/entities/user.entity';
 
 @Injectable()
 export class NotificationService {
@@ -29,6 +29,10 @@ export class NotificationService {
     await this.notificationRepository.save(notification);
 
     const userNotifications = users.map((user) => {
+      //TODO: only active users should receive notifications
+      if (user.status !== UserStatus.ACTIVE) {
+        return null;
+      }
       return this.userNotificationRepository.create({
         user,
         notification,

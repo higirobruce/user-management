@@ -43,7 +43,6 @@ export class Availability {
   @UpdateDateColumn()
   updatedAt: Date;
   
-
   @ManyToOne(() => User, (user) => user.availabilities)
   user: User;
 }

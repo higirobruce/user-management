@@ -93,6 +93,7 @@ export class User {
   @OneToMany(
     () => UserNotification,
     (userNotification) => userNotification.user,
+    { cascade: false },
   )
   userNotifications: UserNotification[];
 

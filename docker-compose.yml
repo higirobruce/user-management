@@ -27,7 +27,7 @@ services:
     container_name: user_management_app
     restart: always
     ports:
-      - "3001:3001"
+      - "4000:4000"
     environment:
       - NODE_ENV=${NODE_ENV}
       - DB_HOST=${DB_HOST}

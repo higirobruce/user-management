@@ -30,6 +30,7 @@ export class NotificationController {
       createNotificationDto.title,
       createNotificationDto.message,
       users,
+      createNotificationDto.link,
     );
   }
 

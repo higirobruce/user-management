@@ -18,10 +18,12 @@ export class NotificationService {
     title: string,
     message: string,
     users: User[],
+    link: string,
   ): Promise<Notification> {
     const notification = this.notificationRepository.create({
       title,
       message,
+      link,
       readBy: []
     });
     await this.notificationRepository.save(notification);

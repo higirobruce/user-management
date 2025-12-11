@@ -37,7 +37,15 @@ export class PmsService {
     await this.pmsRepository.delete(id);
   }
 
-  // Remote integration
+  // Remote integration methods
+  async fetchSectoList(): Promise<any> {
+    return this.integrationService.fetchSectoList();
+  }
+
+  async fetchInstitutionList(): Promise<any> {
+    return this.integrationService.fetchInstitutionList();
+  }
+
   async getRemoteProjects(institution: string): Promise<any> {
     return this.integrationService.fetchProjects(institution);
   }

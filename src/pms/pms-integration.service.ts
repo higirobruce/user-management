@@ -24,20 +24,17 @@ export class PmsIntegrationService {
   ) { }
 
   private async getAccessToken(): Promise<string> {
-    const url = this.configService.get<string>('AUTH_URL');
+    const url = this.configService.get<string>('AUTH_BASE_URL') + this.configService.get<string>('AUTH_URL');
     const username = this.configService.get<string>('AUTH_USERNAME');
     const password = this.configService.get<string>('AUTH_PASSWORD');
     const totp = this.configService.get<string>('AUTH_TOTP');
 
-    console.log('X-REALM: ',this.configService.get<string>('X_REALM'))
 
     const requestBody = {
       username,
       password,
       totp,
     };
-
-    console.log('Request Body',requestBody)
 
     try {
       const response$ = this.httpService.post<TokenResponse>(
@@ -51,7 +48,6 @@ export class PmsIntegrationService {
         },
       );
       const { data } = await firstValueFrom(response$);
-      console.log(data)
       return data.data.access_token;
     } catch (error) {
       console.log(error)
@@ -67,7 +63,7 @@ export class PmsIntegrationService {
 
   async fetchProjects(institutionName: string): Promise<any> {
     const token = await this.getAccessToken();
-    const projectsUrl = this.configService.get<string>('PROJECTS_API_URL');
+    const projectsUrl = this.configService.get<string>('API_BASE_URL') + this.configService.get<string>('PROJECTS_API_URL');
     const realmHeader = this.configService.get<string>('X_REALM');
 
     try {
@@ -93,7 +89,7 @@ export class PmsIntegrationService {
 
   async fetchAllMegaProjects(): Promise<any> {
     const token = await this.getAccessToken();
-    const megaProjectsUrl = this.configService.get<string>('MEGAPROJECTS_API_URL');
+    const megaProjectsUrl = this.configService.get<string>('API_BASE_URL') + this.configService.get<string>('MEGAPROJECTS_API_URL');
     const realmHeader = this.configService.get<string>('X_REALM');
 
     try {
@@ -119,7 +115,7 @@ export class PmsIntegrationService {
 
   async fetchAllPrograms(): Promise<any> {
     const token = await this.getAccessToken();
-    const programsUrl = this.configService.get<string>('MEGAPROJECTS_PROGRAMS_API_URL');
+    const programsUrl = this.configService.get<string>('API_BASE_URL') + this.configService.get<string>('MEGAPROJECTS_PROGRAMS_API_URL');
     const realmHeader = this.configService.get<string>('X_REALM');
 
     try {
@@ -143,9 +139,61 @@ export class PmsIntegrationService {
     }
   }
 
+  async fetchSectoList(): Promise<any> {
+      const token = await this.getAccessToken();
+      const sectorsUrl = this.configService.get<string>('API_BASE_URL') + this.configService.get<string>('SECTORS_API_URL');
+      const realmHeader = this.configService.get<string>('X_REALM');
+
+      try {
+        const response$ = this.httpService.get(
+          `${sectorsUrl}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'X-REALM': realmHeader,
+            },
+          },
+        );
+        const { data } = await firstValueFrom(response$);
+        return data;
+      } catch (error) {
+        console.log(error)
+        throw new HttpException(
+          'Failed to fetch sectors',
+          error.response?.status || 500,
+        );
+      }
+  }
+
+  async fetchInstitutionList(): Promise<any> {
+      const token = await this.getAccessToken();
+      const institutionsUrl = this.configService.get<string>('API_BASE_URL') + this.configService.get<string>('INSTITUTIONS_API_URL');
+      const realmHeader = this.configService.get<string>('X_REALM');
+
+      try {
+        const response$ = this.httpService.get(
+          `${institutionsUrl}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'X-REALM': realmHeader,
+            },
+          },
+        );
+        const { data } = await firstValueFrom(response$);
+        return data;
+      } catch (error) {
+        // console.log(error.response)
+        throw new HttpException(
+          'Failed to fetch institutions',
+          error.response?.status || 500,
+        );
+      }
+  }
+
   async fetchProjectsByProgramId(programId: string, institutionName: string): Promise<any> {
     const token = await this.getAccessToken();
-    const projectsUrl = this.configService.get<string>('PROJECTS_PROGRAM_API_URL');
+    const projectsUrl = this.configService.get<string>('API_BASE_URL') + this.configService.get<string>('PROJECTS_PROGRAM_API_URL');
     const realmHeader = this.configService.get<string>('X_REALM');
 
     try {

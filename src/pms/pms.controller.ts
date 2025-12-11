@@ -1,10 +1,21 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { PmsService } from './pms.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('pms')
+@UseGuards(JwtAuthGuard)
 export class PmsController {
   constructor(private readonly pmsService: PmsService) { }
 
+  @Get('sectors')
+  getSectors() {
+    return this.pmsService.fetchSectoList();
+  }
+
+  @Get('institutions')
+  getInstitutions() {
+    return this.pmsService.fetchInstitutionList();
+  }
 
   @Get('projects/allMegaProjects')
   getAllMegaProjects() {

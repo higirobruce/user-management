@@ -43,6 +43,6 @@ export class Availability {
   @UpdateDateColumn()
   updatedAt: Date;
   
-  @ManyToOne(() => User, (user) => user.availabilities)
+  @ManyToOne(() => User, (user) => user.availabilities, { onDelete: 'CASCADE' })
   user: User;
 }

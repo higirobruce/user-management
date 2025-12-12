@@ -47,6 +47,6 @@ export class ApiKey {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, (user) => user.apiKeys)
+  @ManyToOne(() => User, (user) => user.apiKeys, { onDelete: 'CASCADE' })
   user: User;
 }

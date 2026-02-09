@@ -8,11 +8,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EmailNotificationModule } from 'src/email-notification/email-notification.module';
 import { EmailNotificationService } from 'src/email-notification/email-notification.service';
+import { ActivityLogModule } from '../activity-log/activity-log.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     forwardRef(() => ApiKeyModule),
+    ActivityLogModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

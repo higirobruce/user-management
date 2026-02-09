@@ -4,9 +4,11 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as path from 'path';
+import { ActivityLogModule } from '../activity-log/activity-log.module';
 
 @Module({
   imports: [
+    ActivityLogModule,
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

@@ -3,9 +3,11 @@ import { EmailNotificationService } from './email-notification.service';
 import { EmailNotificationController } from './email-notification.controller';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ActivityLogModule } from '../activity-log/activity-log.module';
 
 @Module({
   imports: [
+    ActivityLogModule,
     ConfigModule.forRoot({ isGlobal: true }), // load .env globally
     MailerModule.forRootAsync({
       imports: [ConfigModule],

@@ -11,6 +11,7 @@ import { EmailNotificationModule } from './email-notification/email-notification
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PmsModule } from './pms/pms.module';
 import { EventModule } from './cabinet-event/event.module';
+import { ActivityLogModule } from './activity-log/activity-log.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { EventModule } from './cabinet-event/event.module';
     PmsModule,
     EventModule,
     NotificationModule,
+    ActivityLogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

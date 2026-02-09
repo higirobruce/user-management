@@ -10,6 +10,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { EmailNotificationModule } from 'src/email-notification/email-notification.module';
 import { EmailNotificationService } from 'src/email-notification/email-notification.service';
+import { ActivityLogModule } from '../activity-log/activity-log.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EmailNotificationService } from 'src/email-notification/email-notificat
       signOptions: { expiresIn: '15m' },
     }),
     UserModule,
+    ActivityLogModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtRefreshStrategy, EmailNotificationService],

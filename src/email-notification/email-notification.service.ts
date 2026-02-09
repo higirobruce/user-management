@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as nodemailer from 'nodemailer';
+import { ActivityLogService } from '../activity-log/activity-log.service';
+import { ActivityAction } from '../activity-log/entities/activity-log.entity';
 
 @Injectable()
 export class EmailNotificationService {
   private transporter;
 
-  constructor(private mailerService: MailerService) {
+  constructor(
+    private mailerService: MailerService,
+    private activityLogService: ActivityLogService,
+  ) {
     this.transporter = nodemailer.createTransport({
       host:  process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
@@ -39,6 +44,12 @@ export class EmailNotificationService {
         name: name,
       },
     });
+    await this.activityLogService.log(
+      ActivityAction.EMAIL_SENT,
+      `Welcome email sent to ${to}`,
+      null,
+      { to, emailType: 'welcome', name },
+    );
   }
 
   async sendCommentNotification(
@@ -61,6 +72,12 @@ export class EmailNotificationService {
       },
       bcc: cc,
     });
+    await this.activityLogService.log(
+      ActivityAction.EMAIL_SENT,
+      `Comment notification email sent to ${to}`,
+      null,
+      { to, emailType: 'comment_notification', actionTitle },
+    );
   }
 
   async sendGenericEmail(
@@ -91,6 +108,12 @@ export class EmailNotificationService {
 
     this.transporter.sendMail(mailOptions).then(() => {
       console.timeEnd('email');
+      this.activityLogService.log(
+        ActivityAction.EMAIL_SENT,
+        `Generic email sent to ${to}`,
+        null,
+        { to, subject, emailType: 'generic' },
+      );
     }).catch(console.error);
 
     return {

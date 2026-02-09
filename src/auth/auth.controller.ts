@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   UnauthorizedException,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -23,11 +24,17 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { ForgotPasswordDto } from '../users/dto/forgot-password.dto';
 import { ResetPasswordDto } from '../users/dto/reset-password.dto';
 import { UsersService } from 'src/users/users.service';
+import { ActivityLogService } from '../activity-log/activity-log.service';
+import { ActivityAction } from '../activity-log/entities/activity-log.entity';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService, private readonly userService: UsersService) { }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UsersService,
+    private readonly activityLogService: ActivityLogService,
+  ) { }
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
@@ -46,8 +53,8 @@ export class AuthController {
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'User logged in successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async login(@Body() loginDto: LoginDto) {
-    const result = await this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto, @Req() req: any) {
+    const result = await this.authService.login(loginDto, req.ip);
     return result;
   }
 
@@ -56,8 +63,8 @@ export class AuthController {
   @ApiOperation({ summary: 'User login with MFA' })
   @ApiResponse({ status: 200, description: 'User logged in successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async loginMFA(@Body() loginDto: LoginDto) {
-    const result = await this.authService.loginMFA(loginDto);
+  async loginMFA(@Body() loginDto: LoginDto, @Req() req: any) {
+    const result = await this.authService.loginMFA(loginDto, req.ip);
     if ('requiresTwoFactorAuth' in result && result.requiresTwoFactorAuth) {
       return { message: 'Two-factor authentication required', userId: result.userId };
     }
@@ -69,7 +76,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Verify two-factor authentication code' })
   @ApiResponse({ status: 200, description: '2FA code verified successfully' })
   @ApiResponse({ status: 401, description: 'Invalid 2FA code' })
-  async verifyTwoFactorAuthentication(@Body() verifyTwoFactorDto: VerifyTwoFactorDto) {
+  async verifyTwoFactorAuthentication(@Body() verifyTwoFactorDto: VerifyTwoFactorDto, @Req() req: any) {
 
     const user = await this.userService.findOne(verifyTwoFactorDto.userId);
     if (!user) {
@@ -84,6 +91,13 @@ export class AuthController {
     }
     const tokens = await this.authService.generateTokens(user);
     await this.authService.updateRefreshToken(user.id, tokens.refreshToken);
+    await this.activityLogService.log(
+      ActivityAction.LOGIN_MFA_VERIFIED,
+      `User ${user.email} completed MFA login`,
+      user.id,
+      { email: user.email, method: 'mfa' },
+      req.ip,
+    );
     return tokens;
   }
 

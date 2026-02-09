@@ -16,6 +16,8 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
 import { EmailNotificationService } from '../email-notification/email-notification.service';
+import { ActivityLogService } from '../activity-log/activity-log.service';
+import { ActivityAction } from '../activity-log/entities/activity-log.entity';
 
 export interface TokenPayload {
   sub: string;
@@ -42,6 +44,7 @@ export class AuthService {
     private usersService: UsersService,
     private configService: ConfigService,
     private emailNotificationService: EmailNotificationService,
+    private activityLogService: ActivityLogService,
   ) { }
 
   async register(createUserDto: CreateUserDto): Promise<User> {
@@ -63,7 +66,7 @@ export class AuthService {
     return this.userRepository.save(user);
   }
 
-  async loginMFA(loginDto: LoginDto): Promise<AuthTokens | { requiresTwoFactorAuth: boolean; userId: string }> {
+  async loginMFA(loginDto: LoginDto, ipAddress?: string): Promise<AuthTokens | { requiresTwoFactorAuth: boolean; userId: string }> {
     const user = await this.userRepository.findOne({
       where: { email: loginDto.email },
     });
@@ -83,10 +86,17 @@ export class AuthService {
     // Always send an OTP and indicate that 2FA is required
     
     await this.usersService.sendTwoFactorCode(user);
+    await this.activityLogService.log(
+      ActivityAction.LOGIN_MFA_INITIATED,
+      `MFA login initiated for ${user.email}`,
+      user.id,
+      { email: user.email },
+      ipAddress,
+    );
     return { requiresTwoFactorAuth: true, userId: user.id };
   }
 
-  async login(loginDto: LoginDto): Promise<AuthTokens> {
+  async login(loginDto: LoginDto, ipAddress?: string): Promise<AuthTokens> {
     const user = await this.userRepository.findOne({
       where: { email: loginDto.email },
     });
@@ -101,6 +111,13 @@ export class AuthService {
 
     const tokens = await this.generateTokens(user);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
+    await this.activityLogService.log(
+      ActivityAction.LOGIN,
+      `User ${user.email} logged in`,
+      user.id,
+      { email: user.email, method: 'password' },
+      ipAddress,
+    );
 
     return tokens;
   }

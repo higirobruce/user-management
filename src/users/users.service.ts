@@ -45,7 +45,6 @@ export class UsersService {
 
   async sendTwoFactorCode(user: User): Promise<void> {
     const otp = authenticator.generate(user.email);
-    console.log(`Generated OTP for ${user.email}: ${otp}`);
     const htmlContent = `
       <h1>Your 2FA Code</h1>
       <p>Your two-factor authentication code is: <strong>${otp}</strong></p>
@@ -254,7 +253,6 @@ export class UsersService {
   }
 
   async verifyTwoFactorAuthentication(user: User, otp: string): Promise<boolean> {
-    console.log(`Verifying OTP for ${user.email}. Received OTP: ${otp}. Secret: ${user.email}`);
     return authenticator.verify({
       token: otp,
       secret: user.email,

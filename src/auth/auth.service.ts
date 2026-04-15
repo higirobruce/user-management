@@ -221,14 +221,20 @@ export class AuthService {
       title: user.title,
     };
 
+    const jwtSecret = this.configService.get<string>('JWT_SECRET');
+    const jwtRefreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+    if (!jwtSecret || !jwtRefreshSecret) {
+      throw new InternalServerErrorException('JWT secrets are not configured');
+    }
+
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        secret: process.env.JWT_SECRET || 'your-secret-key',
-        expiresIn: '8h',
+        secret: jwtSecret,
+        expiresIn: '15m',
       }),
       this.jwtService.signAsync(payload, {
-        secret: process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key',
-        expiresIn: '7d',
+        secret: jwtRefreshSecret,
+        expiresIn: '1d',
       }),
     ]);
 
@@ -246,9 +252,6 @@ export class AuthService {
   }
 
   async validateTwoFactorAuthentication(user: User, otp: string): Promise<boolean> {
-    const valid = this.usersService.verifyTwoFactorAuthentication(user, otp)
-
-    console.log(otp, valid, user.email)
-    return valid;
+    return this.usersService.verifyTwoFactorAuthentication(user, otp);
   }
 }

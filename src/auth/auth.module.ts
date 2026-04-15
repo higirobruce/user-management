@@ -17,7 +17,7 @@ import { ActivityLogModule } from '../activity-log/activity-log.module';
     TypeOrmModule.forFeature([User]),
     PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'your-secret-key',
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '15m' },
     }),
     UserModule,

@@ -2,12 +2,14 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
   UseGuards,
   HttpCode,
   HttpStatus,
   UnauthorizedException,
   Req,
+  Res,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -15,7 +17,9 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AuthService } from './auth.service';
+import { Response } from 'express';
+import * as crypto from 'crypto';
+import { AuthService, AuthTokens } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { VerifyTwoFactorDto } from './dto/verify-two-factor.dto';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
@@ -27,6 +31,15 @@ import { UsersService } from 'src/users/users.service';
 import { ActivityLogService } from '../activity-log/activity-log.service';
 import { ActivityAction } from '../activity-log/entities/activity-log.entity';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: 'strict' as const,
+  path: '/',
+};
+
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
@@ -35,6 +48,38 @@ export class AuthController {
     private readonly userService: UsersService,
     private readonly activityLogService: ActivityLogService,
   ) { }
+
+  private setTokenCookies(res: Response, tokens: AuthTokens): void {
+    res.cookie('access_token', tokens.accessToken, {
+      ...COOKIE_OPTIONS,
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+    res.cookie('refresh_token', tokens.refreshToken, {
+      ...COOKIE_OPTIONS,
+      path: '/auth/refresh',
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+  }
+
+  private clearTokenCookies(res: Response): void {
+    res.clearCookie('access_token', COOKIE_OPTIONS);
+    res.clearCookie('refresh_token', { ...COOKIE_OPTIONS, path: '/auth/refresh' });
+  }
+
+  @Get('csrf-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get CSRF token' })
+  @ApiResponse({ status: 200, description: 'CSRF token generated' })
+  getCsrfToken(@Req() req: any, @Res({ passthrough: true }) res: Response) {
+    const csrfToken = crypto.randomBytes(32).toString('hex');
+    res.cookie('csrf_token', csrfToken, {
+      httpOnly: false, // Frontend must read this
+      secure: isProduction,
+      sameSite: 'strict' as const,
+      path: '/',
+    });
+    return { csrfToken };
+  }
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
@@ -53,9 +98,18 @@ export class AuthController {
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'User logged in successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async login(@Body() loginDto: LoginDto, @Req() req: any) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Req() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const result = await this.authService.login(loginDto, req.ip);
-    return result;
+    this.setTokenCookies(res, result);
+    return {
+      message: 'Login successful',
+      // Tokens in body for API testing only — frontend should rely on cookies
+      ...(isProduction ? {} : { accessToken: result.accessToken, refreshToken: result.refreshToken }),
+    };
   }
 
   @Post('login/mfa')
@@ -68,7 +122,7 @@ export class AuthController {
     if ('requiresTwoFactorAuth' in result && result.requiresTwoFactorAuth) {
       return { message: 'Two-factor authentication required', userId: result.userId };
     }
-    return result;
+    return { message: 'Login successful' };
   }
 
   @Post('2fa/verify')
@@ -76,8 +130,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Verify two-factor authentication code' })
   @ApiResponse({ status: 200, description: '2FA code verified successfully' })
   @ApiResponse({ status: 401, description: 'Invalid 2FA code' })
-  async verifyTwoFactorAuthentication(@Body() verifyTwoFactorDto: VerifyTwoFactorDto, @Req() req: any) {
-
+  async verifyTwoFactorAuthentication(
+    @Body() verifyTwoFactorDto: VerifyTwoFactorDto,
+    @Req() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const user = await this.userService.findOne(verifyTwoFactorDto.userId);
     if (!user) {
       throw new UnauthorizedException('Invalid user');
@@ -98,38 +155,43 @@ export class AuthController {
       { email: user.email, method: 'mfa' },
       req.ip,
     );
-    return tokens;
+    this.setTokenCookies(res, tokens);
+    return {
+      message: '2FA verification successful',
+      ...(isProduction ? {} : { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken }),
+    };
   }
 
   @Post('refresh')
   @UseGuards(JwtRefreshAuthGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiResponse({ status: 200, description: 'Token refreshed successfully' })
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
-  async refreshTokens(@CurrentUser() user: any) {
+  async refreshTokens(
+    @CurrentUser() user: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const tokens = await this.authService.refreshTokens(
       user.sub,
       user.refreshToken,
     );
-    return {
-      message: 'Tokens refreshed successfully',
-      ...tokens,
-    };
+    this.setTokenCookies(res, tokens);
+    return { message: 'Tokens refreshed successfully' };
   }
 
   @Post('logout')
   @UseGuards(JwtRefreshAuthGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Logout user' })
   @ApiResponse({ status: 200, description: 'User successfully logged out' })
-  async logout(@CurrentUser() user: any) {
+  async logout(
+    @CurrentUser() user: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     await this.authService.logout(user.sub);
-    return {
-      message: 'Logout successful',
-    };
+    this.clearTokenCookies(res);
+    return { message: 'Logout successful' };
   }
 
   @Post('forgot-password')

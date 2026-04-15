@@ -66,6 +66,11 @@ export class AuthController {
   private clearTokenCookies(res: Response): void {
     res.clearCookie('access_token', COOKIE_OPTIONS);
     res.clearCookie('refresh_token', { ...COOKIE_OPTIONS, path: '/api/auth/refresh' });
+    res.clearCookie('csrf_token', {
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' as const : 'none' as const,
+      path: '/',
+    });
   }
 
   @Get('csrf-token')

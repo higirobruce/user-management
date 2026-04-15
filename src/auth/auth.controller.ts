@@ -56,14 +56,14 @@ export class AuthController {
     });
     res.cookie('refresh_token', tokens.refreshToken, {
       ...COOKIE_OPTIONS,
-      path: '/auth/refresh',
+      path: '/api/auth/refresh',
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
   }
 
   private clearTokenCookies(res: Response): void {
     res.clearCookie('access_token', COOKIE_OPTIONS);
-    res.clearCookie('refresh_token', { ...COOKIE_OPTIONS, path: '/auth/refresh' });
+    res.clearCookie('refresh_token', { ...COOKIE_OPTIONS, path: '/api/auth/refresh' });
   }
 
   @Get('csrf-token')

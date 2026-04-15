@@ -22,8 +22,10 @@ import * as crypto from 'crypto';
 import { AuthService, AuthTokens } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { VerifyTwoFactorDto } from './dto/verify-two-factor.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { User } from '../users/entities/user.entity';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { ForgotPasswordDto } from '../users/dto/forgot-password.dto';
 import { ResetPasswordDto } from '../users/dto/reset-password.dto';
@@ -79,6 +81,17 @@ export class AuthController {
       path: '/',
     });
     return { csrfToken };
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current authenticated user' })
+  @ApiResponse({ status: 200, description: 'Current user profile' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  getMe(@CurrentUser() user: User) {
+    return user;
   }
 
   @Post('register')

@@ -54,7 +54,7 @@ export class AuthController {
   private setTokenCookies(res: Response, tokens: AuthTokens): void {
     res.cookie('access_token', tokens.accessToken, {
       ...COOKIE_OPTIONS,
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 8 * 60 * 60 * 1000, // 8 hours
     });
     res.cookie('refresh_token', tokens.refreshToken, {
       ...COOKIE_OPTIONS,

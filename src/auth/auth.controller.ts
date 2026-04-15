@@ -202,7 +202,7 @@ export class AuthController {
     @CurrentUser() user: any,
     @Res({ passthrough: true }) res: Response,
   ) {
-    await this.authService.logout(user.sub);
+    await this.authService.logout(user.id);
     this.clearTokenCookies(res);
     return { message: 'Logout successful' };
   }

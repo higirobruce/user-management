@@ -37,7 +37,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: isProduction,
+  secure: true,
   sameSite: isProduction ? 'strict' as const : 'none' as const,
   path: '/',
 };
@@ -67,7 +67,7 @@ export class AuthController {
     res.clearCookie('access_token', COOKIE_OPTIONS);
     res.clearCookie('refresh_token', { ...COOKIE_OPTIONS, path: '/api/auth/refresh' });
     res.clearCookie('csrf_token', {
-      secure: isProduction,
+      secure: true,
       sameSite: isProduction ? 'strict' as const : 'none' as const,
       path: '/',
     });
@@ -81,7 +81,7 @@ export class AuthController {
     const csrfToken = crypto.randomBytes(32).toString('hex');
     res.cookie('csrf_token', csrfToken, {
       httpOnly: false, // Frontend must read this
-      secure: isProduction,
+      secure: true,
       sameSite: isProduction ? 'strict' as const : 'none' as const,
       path: '/',
     });

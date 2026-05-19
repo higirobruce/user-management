@@ -35,12 +35,26 @@ import { ActivityAction } from '../activity-log/entities/activity-log.entity';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+// In dev/staging the frontend runs on localhost while the API is on a different
+// site (staging-*). Chrome's third-party cookie phaseout drops SameSite=None
+// cookies unless they're explicitly partitioned (CHIPS).
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: true,
   sameSite: isProduction ? 'strict' as const : 'none' as const,
   path: '/',
+  ...(isProduction ? {} : { partitioned: true }),
 };
+
+const CSRF_COOKIE_OPTIONS = {
+  httpOnly: false, // Frontend must read this
+  secure: true,
+  sameSite: isProduction ? 'strict' as const : 'none' as const,
+  path: '/',
+  ...(isProduction ? {} : { partitioned: true }),
+};
+
+const REFRESH_COOKIE_PATH = '/api/auth/refresh';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -58,19 +72,15 @@ export class AuthController {
     });
     res.cookie('refresh_token', tokens.refreshToken, {
       ...COOKIE_OPTIONS,
-      path: '/api/auth/refresh',
+      path: REFRESH_COOKIE_PATH,
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
   }
 
   private clearTokenCookies(res: Response): void {
     res.clearCookie('access_token', COOKIE_OPTIONS);
-    res.clearCookie('refresh_token', { ...COOKIE_OPTIONS, path: '/api/auth/refresh' });
-    res.clearCookie('csrf_token', {
-      secure: true,
-      sameSite: isProduction ? 'strict' as const : 'none' as const,
-      path: '/',
-    });
+    res.clearCookie('refresh_token', { ...COOKIE_OPTIONS, path: REFRESH_COOKIE_PATH });
+    res.clearCookie('csrf_token', CSRF_COOKIE_OPTIONS);
   }
 
   @Get('csrf-token')
@@ -79,12 +89,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'CSRF token generated' })
   getCsrfToken(@Req() req: any, @Res({ passthrough: true }) res: Response) {
     const csrfToken = crypto.randomBytes(32).toString('hex');
-    res.cookie('csrf_token', csrfToken, {
-      httpOnly: false, // Frontend must read this
-      secure: true,
-      sameSite: isProduction ? 'strict' as const : 'none' as const,
-      path: '/',
-    });
+    res.cookie('csrf_token', csrfToken, CSRF_COOKIE_OPTIONS);
     return { csrfToken };
   }
 

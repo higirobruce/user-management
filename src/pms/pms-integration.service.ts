@@ -16,6 +16,15 @@ interface TokenResponse {
   }
 }
 
+// Upstream PMS/IAM failures must not leak as 401/403 to the SPA — the SPA's
+// auth interceptor would interpret that as a session expiry and log the user
+// out. Remap auth-shaped upstream errors to 502 (bad gateway).
+function mapUpstreamStatus(error: any): number {
+  const upstream = error?.response?.status;
+  if (upstream === 401 || upstream === 403) return 502;
+  return upstream || 500;
+}
+
 @Injectable()
 export class PmsIntegrationService {
   constructor(
@@ -53,7 +62,7 @@ export class PmsIntegrationService {
       console.log(error)
       throw new HttpException(
         'Failed to retrieve access token',
-        error.response?.status || 500,
+        mapUpstreamStatus(error),
         {
           cause: error,
         },
@@ -82,7 +91,7 @@ export class PmsIntegrationService {
       console.log(error.response)
       throw new HttpException(
         'Failed to fetch projects',
-        error.response?.status || 500,
+        mapUpstreamStatus(error),
       );
     }
   }
@@ -108,7 +117,7 @@ export class PmsIntegrationService {
       // console.log(error.response)
       throw new HttpException(
         'Failed to fetch projects',
-        error.response?.status || 500,
+        mapUpstreamStatus(error),
       );
     }
   }
@@ -134,7 +143,7 @@ export class PmsIntegrationService {
       // console.log(error.response)
       throw new HttpException(
         'Failed to fetch projects',
-        error.response?.status || 500,
+        mapUpstreamStatus(error),
       );
     }
   }
@@ -160,7 +169,7 @@ export class PmsIntegrationService {
         console.log(error)
         throw new HttpException(
           'Failed to fetch sectors',
-          error.response?.status || 500,
+          mapUpstreamStatus(error),
         );
       }
   }
@@ -186,7 +195,7 @@ export class PmsIntegrationService {
         // console.log(error.response)
         throw new HttpException(
           'Failed to fetch institutions',
-          error.response?.status || 500,
+          mapUpstreamStatus(error),
         );
       }
   }
@@ -212,7 +221,7 @@ export class PmsIntegrationService {
       // console.log(error.response)
       throw new HttpException(
         'Failed to fetch projects',
-        error.response?.status || 500,
+        mapUpstreamStatus(error),
       );
     }
   }

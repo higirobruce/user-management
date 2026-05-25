@@ -143,7 +143,7 @@ export class UsersController {
   }
 
   @Post('request-password-change')
-  @Throttle({ 'password-reset': { limit: 3, ttl: 15 * 60_000 } })
+  @Throttle({ default: { limit: 3, ttl: 15 * 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request password change email' })
   @ApiResponse({ status: 200, description: 'Password change email sent' })

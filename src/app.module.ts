@@ -33,14 +33,11 @@ import { ActivityLogModule } from './activity-log/activity-log.module';
       }),
       inject: [ConfigService],
     }),
-    ThrottlerModule.forRoot([
-      // Default: 100 req/min per IP for everything
-      { name: 'default', ttl: 60_000, limit: 100 },
-      // Strict: 5 req/min — login, MFA, 2FA verification
-      { name: 'auth', ttl: 60_000, limit: 5 },
-      // Very strict: 3 req per 15 min — password reset/change flows
-      { name: 'password-reset', ttl: 15 * 60_000, limit: 3 },
-    ]),
+    // Single global throttler at 100 req/min per IP. Stricter limits on
+    // auth/password-reset routes are applied via @Throttle({ default: ... })
+    // — defining extra named throttlers here would make them apply to every
+    // route, not just the ones we decorate.
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 100 }]),
     UserModule,
     AuthModule,
     AvailabilityModule,

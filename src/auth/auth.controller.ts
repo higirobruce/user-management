@@ -105,7 +105,7 @@ export class AuthController {
   }
 
   @Post('login')
-  @Throttle({ auth: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'User logged in successfully' })
@@ -125,7 +125,7 @@ export class AuthController {
   }
 
   @Post('login/mfa')
-  @Throttle({ auth: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'User login with MFA' })
   @ApiResponse({ status: 200, description: 'User logged in successfully' })
@@ -139,7 +139,7 @@ export class AuthController {
   }
 
   @Post('2fa/verify')
-  @Throttle({ auth: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify two-factor authentication code' })
   @ApiResponse({ status: 200, description: '2FA code verified successfully' })
@@ -209,7 +209,7 @@ export class AuthController {
   }
 
   @Post('forgot-password')
-  @Throttle({ 'password-reset': { limit: 3, ttl: 15 * 60_000 } })
+  @Throttle({ default: { limit: 3, ttl: 15 * 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Send password reset email' })
   @ApiResponse({ status: 200, description: 'Password reset email sent' })
@@ -222,7 +222,7 @@ export class AuthController {
   }
 
   @Post('reset-password')
-  @Throttle({ 'password-reset': { limit: 3, ttl: 15 * 60_000 } })
+  @Throttle({ default: { limit: 3, ttl: 15 * 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset password using token' })
   @ApiResponse({ status: 200, description: 'Password reset successfully' })

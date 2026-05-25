@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { RolesGuard } from './auth/guards/roles.guard';
 import { UserModule } from './users/users.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { EmailModule } from './email/email.module';
@@ -56,7 +55,6 @@ import { ActivityLogModule } from './activity-log/activity-log.module';
   providers: [
     AppService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
-    { provide: APP_GUARD, useClass: RolesGuard },
   ],
 })
 export class AppModule {}

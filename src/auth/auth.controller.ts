@@ -25,8 +25,11 @@ import { LoginDto } from './dto/login.dto';
 import { VerifyTwoFactorDto } from './dto/verify-two-factor.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { User } from '../users/entities/user.entity';
+import { Roles } from './decorators/roles.decorator';
+import { User, UserRole } from '../users/entities/user.entity';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 import { ForgotPasswordDto } from '../users/dto/forgot-password.dto';
 import { ResetPasswordDto } from '../users/dto/reset-password.dto';
 import { UsersService } from 'src/users/users.service';
@@ -102,6 +105,23 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   getMe(@CurrentUser() user: User) {
     return user;
+  }
+
+  @Post('register')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Register a new user (Admin only)' })
+  @ApiResponse({ status: 201, description: 'User successfully created' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  async register(@Body() createUserDto: CreateUserDto) {
+    const user = await this.userService.create(createUserDto);
+    return {
+      message: 'User registered successfully',
+      user,
+    };
   }
 
   @Post('login')

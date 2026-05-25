@@ -17,6 +17,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Response } from 'express';
 import * as crypto from 'crypto';
 import { AuthService, AuthTokens } from './auth.service';
@@ -26,7 +27,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
-import { CreateUserDto } from '../users/dto/create-user.dto';
 import { ForgotPasswordDto } from '../users/dto/forgot-password.dto';
 import { ResetPasswordDto } from '../users/dto/reset-password.dto';
 import { UsersService } from 'src/users/users.service';
@@ -104,19 +104,8 @@ export class AuthController {
     return user;
   }
 
-  @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'User successfully created' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  async register(@Body() createUserDto: CreateUserDto) {
-    const user = await this.authService.register(createUserDto);
-    return {
-      message: 'User registered successfully',
-      user: user,
-    };
-  }
-
   @Post('login')
+  @Throttle({ auth: { limit: 5, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'User logged in successfully' })
@@ -136,6 +125,7 @@ export class AuthController {
   }
 
   @Post('login/mfa')
+  @Throttle({ auth: { limit: 5, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'User login with MFA' })
   @ApiResponse({ status: 200, description: 'User logged in successfully' })
@@ -149,6 +139,7 @@ export class AuthController {
   }
 
   @Post('2fa/verify')
+  @Throttle({ auth: { limit: 5, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify two-factor authentication code' })
   @ApiResponse({ status: 200, description: '2FA code verified successfully' })
@@ -218,6 +209,7 @@ export class AuthController {
   }
 
   @Post('forgot-password')
+  @Throttle({ 'password-reset': { limit: 3, ttl: 15 * 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Send password reset email' })
   @ApiResponse({ status: 200, description: 'Password reset email sent' })
@@ -230,6 +222,7 @@ export class AuthController {
   }
 
   @Post('reset-password')
+  @Throttle({ 'password-reset': { limit: 3, ttl: 15 * 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset password using token' })
   @ApiResponse({ status: 200, description: 'Password reset successfully' })

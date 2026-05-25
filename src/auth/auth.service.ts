@@ -12,7 +12,6 @@ import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../users/entities/user.entity';
-import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
 import { EmailNotificationService } from '../email-notification/email-notification.service';
@@ -46,25 +45,6 @@ export class AuthService {
     private emailNotificationService: EmailNotificationService,
     private activityLogService: ActivityLogService,
   ) { }
-
-  async register(createUserDto: CreateUserDto): Promise<User> {
-    const existingUser = await this.userRepository.findOne({
-      where: { email: createUserDto.email },
-    });
-
-    if (existingUser) {
-      throw new BadRequestException('User with this email already exists');
-    }
-
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
-
-    const user = this.userRepository.create({
-      ...createUserDto,
-      password: hashedPassword,
-    });
-
-    return this.userRepository.save(user);
-  }
 
   async loginMFA(loginDto: LoginDto, ipAddress?: string): Promise<AuthTokens | { requiresTwoFactorAuth: boolean; userId: string }> {
     const user = await this.userRepository.findOne({

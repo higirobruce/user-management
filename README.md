@@ -11,6 +11,7 @@ A comprehensive user management service built with NestJS, featuring JWT authent
 - **Role-Based Access Control**: Admin and Minister roles with appropriate permissions
 - **API Key Management**: Generate and manage API keys for programmatic access
 - **User Status Management**: Activate/deactivate user accounts
+- **Activity Logging**: Audit trail for user logins and email notifications
 - **RESTful API**: Comprehensive REST API with Swagger documentation
 - **Docker Support**: Containerized application with PostgreSQL database
 
@@ -115,6 +116,30 @@ A comprehensive user management service built with NestJS, featuring JWT authent
 - `DELETE /availability/:id` - Delete availability by ID
 - `DELETE /availability/all` - Delete all availabilities (Admin only)
 
+### Activity Log Endpoints
+
+- `GET /activity-logs` - Get activity logs (Admin only)
+
+#### Query Parameters
+
+| Parameter | Type   | Description                                                        |
+|-----------|--------|--------------------------------------------------------------------|
+| `action`  | string | Filter by action type: `LOGIN`, `LOGIN_MFA_INITIATED`, `LOGIN_MFA_VERIFIED`, `EMAIL_SENT` |
+| `userId`  | UUID   | Filter logs by a specific user                                     |
+| `page`    | number | Page number (default: 1)                                           |
+| `limit`   | number | Items per page (default: 50)                                       |
+
+#### Tracked Events
+
+| Action                 | Description                                      |
+|------------------------|--------------------------------------------------|
+| `LOGIN`                | User logged in via password                      |
+| `LOGIN_MFA_INITIATED`  | MFA login started, OTP sent to user              |
+| `LOGIN_MFA_VERIFIED`   | User completed MFA verification                  |
+| `EMAIL_SENT`           | Email notification dispatched (welcome, password reset, comment notification, generic) |
+
+Each log entry captures: action type, description, associated user (if applicable), metadata (JSON with contextual details like email type and recipient), IP address (for login events), and timestamp.
+
 ## User Roles
 
 ### Admin
@@ -164,6 +189,16 @@ A comprehensive user management service built with NestJS, featuring JWT authent
 - `createdAt` (Date) - Account creation timestamp
 - `updatedAt` (Date) - Last update timestamp
 - `apiKeys` (Relation) - One-to-many relationship with ApiKey entity
+
+### Activity Logs Table
+- `id` (UUID) - Primary key
+- `action` (Enum) - Event type (`LOGIN`, `LOGIN_MFA_INITIATED`, `LOGIN_MFA_VERIFIED`, `EMAIL_SENT`)
+- `description` (String) - Human-readable event description
+- `userId` (UUID, nullable) - Associated user (SET NULL on user deletion to preserve audit trail)
+- `metadata` (JSONB, nullable) - Contextual data (email type, recipient, login method, etc.)
+- `ipAddress` (String, nullable) - Client IP address (captured for login events)
+- `createdAt` (Date) - Event timestamp
+- `user` (Relation) - Many-to-one relationship with User entity
 
 ### ApiKeys Table
 - `id` (UUID) - Primary key
@@ -368,6 +403,26 @@ curl -X PATCH http://localhost:3000/cabinet-event/EVENT_ID \
 ```bash
 curl -X DELETE http://localhost:3000/cabinet-event/EVENT_ID \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Activity Log API Examples
+
+#### Get all activity logs (Admin)
+```bash
+curl -X GET http://localhost:3000/activity-logs \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
+```
+
+#### Filter logs by action type
+```bash
+curl -X GET "http://localhost:3000/activity-logs?action=LOGIN&page=1&limit=20" \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
+```
+
+#### Filter logs by user
+```bash
+curl -X GET "http://localhost:3000/activity-logs?userId=USER_UUID" \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
 ```
 
 ### Availability API Examples

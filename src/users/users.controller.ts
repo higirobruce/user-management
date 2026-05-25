@@ -17,6 +17,7 @@ import {
   ApiBearerAuth,
   ApiSecurity,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -38,6 +39,7 @@ export class UsersController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Create a new user (Admin only)' })
   @ApiResponse({ status: 201, description: 'User successfully created' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -74,9 +76,10 @@ export class UsersController {
   @Get('profile/:id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get current user profile' })
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Get user profile by ID (Admin only)' })
   @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
-  async getProfile(@Param() id: string) {
+  async getProfile(@Param('id') id: string) {
     const profile = await this.userService.findOne(id);
     return {
       message: 'Profile retrieved successfully',
@@ -87,6 +90,7 @@ export class UsersController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Get user by ID (Admin only)' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -105,7 +109,6 @@ export class UsersController {
   @Patch('profile')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ status: 200, description: 'Profile updated successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -123,6 +126,7 @@ export class UsersController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Update user by ID (Admin only)' })
   @ApiResponse({ status: 200, description: 'User updated successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -139,6 +143,7 @@ export class UsersController {
   }
 
   @Post('request-password-change')
+  @Throttle({ 'password-reset': { limit: 3, ttl: 15 * 60_000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request password change email' })
   @ApiResponse({ status: 200, description: 'Password change email sent' })
@@ -228,9 +233,12 @@ export class UsersController {
   }
 
   @Post('2fa/enable')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Enable two-factor authentication' })
   @ApiResponse({ status: 200, description: 'Two-factor authentication enabled' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async enableTwoFactorAuthentication(
     @CurrentUser() user: User,

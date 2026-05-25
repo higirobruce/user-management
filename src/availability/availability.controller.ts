@@ -40,12 +40,17 @@ export class AvailabilityController {
     @CurrentUser() currentUser: User,
     @Body() createAvailabilityDto: CreateAvailabilityDto,
   ) {
+    if (
+      createAvailabilityDto.userId &&
+      createAvailabilityDto.userId !== currentUser.id &&
+      currentUser.role !== UserRole.ADMIN
+    ) {
+      throw new ForbiddenException(
+        'You are not allowed to create availability for other users.',
+      );
+    }
+
     const targetUserId = createAvailabilityDto.userId || currentUser.id;
-
-    // if (createAvailabilityDto.userId && currentUser.role !== UserRole.ADMIN) {
-    //   throw new ForbiddenException('You are not allowed to create availability for other users.');
-    // }
-
     return this.availabilityService.create(targetUserId, createAvailabilityDto);
   }
 
@@ -102,24 +107,6 @@ export class AvailabilityController {
     );
   }
 
-  //update availability
-
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete an availability' })
-  @ApiResponse({
-    status: 200,
-    description: 'The availability has been successfully deleted.',
-  })
-  @ApiResponse({
-    status: 403,
-    description:
-      'Forbidden. You do not have permission to delete this availability.',
-  })
-  @ApiResponse({ status: 404, description: 'Availability not found.' })
-  async delete(@Param('id') id: string, @CurrentUser() currentUser: User) {
-    return this.availabilityService.delete(id, currentUser);
-  }
-
   //delete all availabilities
 
   @Delete('all')
@@ -140,5 +127,23 @@ export class AvailabilityController {
       );
     }
     return this.availabilityService.deleteAll();
+  }
+
+  //delete one availability
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete an availability' })
+  @ApiResponse({
+    status: 200,
+    description: 'The availability has been successfully deleted.',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Forbidden. You do not have permission to delete this availability.',
+  })
+  @ApiResponse({ status: 404, description: 'Availability not found.' })
+  async delete(@Param('id') id: string, @CurrentUser() currentUser: User) {
+    return this.availabilityService.delete(id, currentUser);
   }
 }

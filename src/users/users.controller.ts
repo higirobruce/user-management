@@ -55,16 +55,14 @@ export class UsersController {
     };
   }
 
+  // TEMP: opened to any authenticated user so the chat @mention picker can
+  // list users. Revert to @Roles(UserRole.ADMIN) once a narrower
+  // /users/directory endpoint is in place.
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Get all users (Admin only)' })
+  @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - Admin access required',
-  })
   async findAll() {
     const users = await this.userService.findAll();
     return {

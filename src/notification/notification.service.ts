@@ -28,19 +28,19 @@ export class NotificationService {
     });
     await this.notificationRepository.save(notification);
 
-    const userNotifications = users.map((user) => {
-      //TODO: only active users should receive notifications
-      if (user.status !== UserStatus.ACTIVE) {
-        return null;
-      }
-      return this.userNotificationRepository.create({
-        user,
-        notification,
-        read: false,
-      });
-    });
+    const userNotifications = users
+      .filter((user) => user.status === UserStatus.ACTIVE)
+      .map((user) =>
+        this.userNotificationRepository.create({
+          user,
+          notification,
+          read: false,
+        }),
+      );
 
-    await this.userNotificationRepository.save(userNotifications);
+    if (userNotifications.length > 0) {
+      await this.userNotificationRepository.save(userNotifications);
+    }
 
     return notification;
   }

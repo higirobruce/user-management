@@ -22,4 +22,11 @@ export class CreateEmailNotificationDto {
   @IsString()
   cc?: string;
 
+  @ApiProperty({
+    required: false,
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
+  })
+  @IsOptional()
+  attachments?: any;
 }

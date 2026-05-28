@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User, UserStatus } from './entities/user.entity';
+import { User, UserRole, UserStatus } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -140,6 +140,59 @@ export class UsersService {
 
   async findUsersByIds(userIds: string[]): Promise<User[]> {
     return this.userRepository.find({ where: { id: In(userIds) } });
+  }
+
+  async findMinistryLeadership(ministry: string): Promise<{
+    ministry: string;
+    ministers: User[];
+    permanentSecretaries: User[];
+  }> {
+    const trimmed = (ministry ?? '').trim();
+    const leadership = await this.userRepository
+      .createQueryBuilder('user')
+      .where('LOWER(user.ministry) = LOWER(:ministry)', { ministry: trimmed })
+      .andWhere('user.status = :status', { status: UserStatus.ACTIVE })
+      .andWhere('user.role IN (:...roles)', {
+        roles: [UserRole.MINISTER, UserRole.PS],
+      })
+      .getMany();
+
+    return {
+      ministry: trimmed,
+      ministers: leadership.filter((u) => u.role === UserRole.MINISTER),
+      permanentSecretaries: leadership.filter((u) => u.role === UserRole.PS),
+    };
+  }
+
+  async findAllMinistryLeadership(): Promise<
+    {
+      ministry: string;
+      ministers: User[];
+      permanentSecretaries: User[];
+    }[]
+  > {
+    const leaders = await this.userRepository.find({
+      where: {
+        status: UserStatus.ACTIVE,
+        role: In([UserRole.MINISTER, UserRole.PS]),
+      },
+    });
+
+    const grouped = new Map<
+      string,
+      { ministry: string; ministers: User[]; permanentSecretaries: User[] }
+    >();
+    for (const user of leaders) {
+      const key = (user.ministry ?? '').trim();
+      if (!key) continue;
+      const bucket =
+        grouped.get(key.toLowerCase()) ??
+        { ministry: key, ministers: [], permanentSecretaries: [] };
+      if (user.role === UserRole.MINISTER) bucket.ministers.push(user);
+      else if (user.role === UserRole.PS) bucket.permanentSecretaries.push(user);
+      grouped.set(key.toLowerCase(), bucket);
+    }
+    return Array.from(grouped.values());
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {

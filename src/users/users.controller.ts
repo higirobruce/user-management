@@ -85,6 +85,36 @@ export class UsersController {
     };
   }
 
+  @Get('ministry-leadership')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'List Minister and PS for every ministry',
+  })
+  @ApiResponse({ status: 200, description: 'Leadership retrieved successfully' })
+  async findAllMinistryLeadership() {
+    const leadership = await this.userService.findAllMinistryLeadership();
+    return {
+      message: 'Ministry leadership retrieved successfully',
+      leadership,
+    };
+  }
+
+  @Get('ministry-leadership/:ministry')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get the Minister and PS for a given ministry',
+  })
+  @ApiResponse({ status: 200, description: 'Leadership retrieved successfully' })
+  async findMinistryLeadership(@Param('ministry') ministry: string) {
+    const leadership = await this.userService.findMinistryLeadership(ministry);
+    return {
+      message: 'Ministry leadership retrieved successfully',
+      leadership,
+    };
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()

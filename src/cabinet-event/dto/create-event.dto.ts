@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsDateString, IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
+import { EventCategory } from '../entities/event.entity';
 
 export class CreateEventDto {
   @ApiProperty()
@@ -24,4 +25,19 @@ export class CreateEventDto {
   @ApiProperty()
   @IsDateString()
   endDate: string;
+
+  @ApiProperty({ enum: EventCategory, required: false })
+  @IsEnum(EventCategory)
+  @IsOptional()
+  category: EventCategory;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  buttonLabel: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  externalLink: string;
 }

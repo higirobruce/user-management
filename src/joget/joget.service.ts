@@ -21,6 +21,10 @@ export interface JogetReport {
   id: string;
   fileName: string | null;
   hasFile: boolean;
+  /** Mime type of the embedded file, charset stripped. */
+  contentType?: string | null;
+  /** Size of the decoded file in bytes (not the base64 length). */
+  size?: number;
   [key: string]: any;
 }
 
@@ -134,33 +138,76 @@ export class JogetService {
     }
   }
 
-  /** Normalised list for the frontend: raw Joget fields plus file metadata. */
+  /** Raw Joget fields plus file metadata — no bytes fetched. */
+  private normalise(row: Record<string, any>): JogetReport {
+    const href = this.extractHref(row);
+    return {
+      ...row,
+      id: row.id,
+      hasFile: href !== null,
+      fileName: href ? this.fileNameFromHref(href) : null,
+    } as JogetReport;
+  }
+
+  /**
+   * Replaces the anchor in the file column with the file itself, as a base64
+   * data URI. JSON cannot carry raw bytes, so base64 is the transport — it
+   * costs ~33% over the wire but drops straight into an <iframe>, an <img>,
+   * or react-pdf with no second request.
+   */
+  private async embedFile(report: JogetReport): Promise<JogetReport> {
+    const href = this.extractHref(report);
+    if (!href || !href.startsWith('/jw/')) {
+      return { ...report, [this.fileColumn]: null, contentType: null, size: 0 };
+    }
+
+    try {
+      const file = await this.download(`${this.baseUrl}${href}`).catch(
+        async (error) => {
+          if (error?.response?.status === 404) {
+            return this.download(`${this.baseUrl}${href}.`);
+          }
+          throw error;
+        },
+      );
+      // Strip the charset Joget appends — it has no meaning on binary and
+      // makes the data URI awkward for consumers.
+      const mime = file.contentType.split(';')[0].trim();
+      return {
+        ...report,
+        [this.fileColumn]: `data:${mime};base64,${file.data.toString('base64')}`,
+        contentType: mime,
+        size: file.data.length,
+      };
+    } catch (error) {
+      // One bad file must not sink the whole list.
+      this.logger.warn(
+        `Could not embed file for ${report.id}: ${error?.message}`,
+      );
+      return { ...report, [this.fileColumn]: null, contentType: null, size: 0 };
+    }
+  }
+
+  /** Every row, with each attachment inlined as a base64 data URI. */
   async listReports(): Promise<{ total: number; data: JogetReport[] }> {
     const response = await this.fetchList();
     const rows = response.data ?? [];
 
-    return {
-      total: response.total ?? rows.length,
-      data: rows.map((row) => {
-        const href = this.extractHref(row);
-        return {
-          ...row,
-          id: row.id,
-          hasFile: href !== null,
-          fileName: href ? this.fileNameFromHref(href) : null,
-        } as JogetReport;
-      }),
-    };
+    const data = await Promise.all(
+      rows.map((row) => this.embedFile(this.normalise(row))),
+    );
+
+    return { total: response.total ?? rows.length, data };
   }
 
   /** One row, same shape as a `listReports()` entry. */
   async getReport(recordId: string): Promise<JogetReport> {
-    const { data } = await this.listReports();
-    const report = data.find((row) => row.id === recordId);
-    if (!report) {
+    const response = await this.fetchList();
+    const row = (response.data ?? []).find((r) => r?.id === recordId);
+    if (!row) {
       throw new NotFoundException(`Report ${recordId} not found`);
     }
-    return report;
+    return this.embedFile(this.normalise(row));
   }
 
   /**

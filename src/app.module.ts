@@ -14,6 +14,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PmsModule } from './pms/pms.module';
 import { EventModule } from './cabinet-event/event.module';
 import { ActivityLogModule } from './activity-log/activity-log.module';
+import { JogetModule } from './joget/joget.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ActivityLogModule } from './activity-log/activity-log.module';
     EventModule,
     NotificationModule,
     ActivityLogModule,
+    JogetModule,
   ],
   controllers: [AppController],
   providers: [

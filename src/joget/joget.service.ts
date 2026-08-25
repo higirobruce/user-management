@@ -21,6 +21,8 @@ export interface JogetReport {
   id: string;
   fileName: string | null;
   hasFile: boolean;
+  /** This record's own file endpoint, or null when it has no attachment. */
+  fileUrl: string | null;
   /** Mime type of the embedded file, charset stripped. */
   contentType?: string | null;
   /** Size of the decoded file in bytes (not the base64 length). */
@@ -146,6 +148,9 @@ export class JogetService {
       id: row.id,
       hasFile: href !== null,
       fileName: href ? this.fileNameFromHref(href) : null,
+      // Each record's own file, ready to hand to react-pdf. Relative so it
+      // works unchanged across local, test and prod.
+      fileUrl: href ? `/joget/reports/${row.id}/file` : null,
     } as JogetReport;
   }
 

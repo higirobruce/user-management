@@ -188,16 +188,28 @@ export class JogetService {
     }
   }
 
-  /** Every row, with each attachment inlined as a base64 data URI. */
-  async listReports(): Promise<{ total: number; data: JogetReport[] }> {
+  /**
+   * Every row. With `includeFiles` (the default) each attachment is inlined
+   * as a base64 data URI, so one call is enough. Pass false to get metadata
+   * only — much lighter for a list view where the user previews one report
+   * at a time and can pull the bytes from `:recordId/file` on demand.
+   */
+  async listReports(
+    includeFiles = true,
+  ): Promise<{ total: number; data: JogetReport[] }> {
     const response = await this.fetchList();
     const rows = response.data ?? [];
+    const total = response.total ?? rows.length;
+
+    if (!includeFiles) {
+      return { total, data: rows.map((row) => this.normalise(row)) };
+    }
 
     const data = await Promise.all(
       rows.map((row) => this.embedFile(this.normalise(row))),
     );
 
-    return { total: response.total ?? rows.length, data };
+    return { total, data };
   }
 
   /** One row, same shape as a `listReports()` entry. */

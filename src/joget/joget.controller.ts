@@ -1,8 +1,9 @@
-import { Controller, Get, Param, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, Res, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -18,11 +19,18 @@ export class JogetController {
   constructor(private readonly jogetService: JogetService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List mission reports held in Joget' })
-  @ApiResponse({ status: 200, description: 'Reports with file metadata.' })
+  @ApiOperation({ summary: 'List quarterly reports held in Joget' })
+  @ApiQuery({
+    name: 'includeFiles',
+    required: false,
+    description:
+      'Default true — inlines each file as a base64 data URI. Pass false for ' +
+      'metadata only, then fetch bytes from :recordId/file on demand.',
+  })
+  @ApiResponse({ status: 200, description: 'Reports, with or without files.' })
   @ApiResponse({ status: 502, description: 'Joget rejected the request.' })
-  listReports() {
-    return this.jogetService.listReports();
+  listReports(@Query('includeFiles') includeFiles?: string) {
+    return this.jogetService.listReports(includeFiles !== 'false');
   }
 
   @Get(':recordId')

@@ -57,3 +57,9 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Contains plaintext Joget credentials — keep out of git
 joget-file-proxy-guide.md
+
+# Local dev harnesses. joget-standalone.ts serves the Joget routes with the
+# JWT guard stubbed out — it must never reach a deployed environment. Both are
+# also excluded in tsconfig.build.json so they stay out of dist/.
+joget-smoke.ts
+joget-standalone.ts

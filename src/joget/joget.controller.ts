@@ -25,6 +25,15 @@ export class JogetController {
     return this.jogetService.listReports();
   }
 
+  @Get(':recordId')
+  @ApiOperation({ summary: 'One report, with its file metadata' })
+  @ApiParam({ name: 'recordId', description: 'The `id` from the report list' })
+  @ApiResponse({ status: 200, description: 'The report record.' })
+  @ApiResponse({ status: 404, description: 'No such report.' })
+  getReport(@Param('recordId') recordId: string) {
+    return this.jogetService.getReport(recordId);
+  }
+
   @Get(':recordId/file')
   @ApiOperation({
     summary: 'Stream a report PDF, fetched from Joget server-side',
@@ -40,9 +49,13 @@ export class JogetController {
 
     res.setHeader('Content-Type', file.contentType);
     res.setHeader('Content-Length', file.buffer.length);
+    // Plain `filename` for older clients, RFC 5987 `filename*` for the real
+    // name — encodeURIComponent alone would surface "Revisit%20.pdf" as the
+    // literal saved filename.
+    const ascii = file.fileName.replace(/[^\x20-\x7e]/g, '_').replace(/["\\]/g, '');
     res.setHeader(
       'Content-Disposition',
-      `inline; filename="${encodeURIComponent(file.fileName)}"`,
+      `inline; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(file.fileName)}`,
     );
     res.end(file.buffer);
   }

@@ -153,6 +153,16 @@ export class JogetService {
     };
   }
 
+  /** One row, same shape as a `listReports()` entry. */
+  async getReport(recordId: string): Promise<JogetReport> {
+    const { data } = await this.listReports();
+    const report = data.find((row) => row.id === recordId);
+    if (!report) {
+      throw new NotFoundException(`Report ${recordId} not found`);
+    }
+    return report;
+  }
+
   /**
    * Steps 1a + 1b — resolve the record's href, then pull the bytes from Joget
    * server-side with Basic Auth. Credentials never reach the browser, and the

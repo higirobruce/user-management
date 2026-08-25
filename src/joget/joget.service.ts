@@ -10,8 +10,7 @@ import { firstValueFrom } from 'rxjs';
 
 /**
  * Joget column holding the upload — an HTML anchor string, not a URL.
- * Configurable because the column name varies by form; the datalist this was
- * first written against no longer exposes one (see README notes).
+ * Overridable via JOGET_FILE_COLUMN, since the name varies by form.
  */
 const DEFAULT_FILE_COLUMN = 'c_uploaded_document';
 

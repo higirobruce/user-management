@@ -21,6 +21,7 @@ export enum UserRole {
   MINISTER_OPM = 'Minister in OPM',
   CDO='CDO',
   OVERSIGHT = 'Oversight',
+  PARLIAMENT = 'Parliament',
 }
 
 export enum UserStatus {

@@ -63,3 +63,6 @@ joget-file-proxy-guide.md
 # also excluded in tsconfig.build.json so they stay out of dist/.
 joget-smoke.ts
 joget-standalone.ts
+
+# Reference documents — not pushed
+doc/

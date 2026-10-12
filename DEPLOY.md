@@ -231,9 +231,15 @@ production should use, and check the value you just set.
 ```bash
 git fetch origin
 git checkout feat/joget-file-proxy
+git reset --hard origin/feat/joget-file-proxy
 ```
 
-**Expect:** `Switched to a new branch 'feat/joget-file-proxy'`.
+**Expect:** `Switched to ... branch` then `HEAD is now at ...`.
+
+The `reset --hard` matters: the branch history has been rewritten once
+already (to clean up commit messages), so a plain `checkout` can leave the
+server on an old copy that no longer exists upstream. Resetting to
+`origin/...` guarantees the server matches GitHub exactly.
 
 **If you see `error: Your local changes ... would be overwritten`:** someone
 edited files directly on the server. Stop and find out what changed before
